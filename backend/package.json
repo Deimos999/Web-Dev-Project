@@ -1,5 +1,5 @@
 {
-  "name": "event-registration-backend",
+  "name": "vvirtual-event-registration-backend",
   "version": "1.0.0",
   "description": "Backend API for Virtual Event Registration Platform",
   "main": "src/server.js",
@@ -17,7 +17,7 @@
     "api"
   ],
   "author": "Irakli tavadze NIkoloz Eubidze Giorgi Maisuradze",
-  "license": "MIT",
+  "license": "ISU",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
@@ -35,5 +35,5 @@
     "nodemon": "^3.0.2",
     "prisma": "^5.7.0"
   },
-  "type": "commonjs"
+  "type": "module"
 }
