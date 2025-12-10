@@ -27,7 +27,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes); //authenticatoon routes
 app.use("/api/registaration", registrationRoutes); // registrtion routes
 app.use("/api/users", userRoutes); // user management routes
-app.use("/api/payments", paymentRoutes); // payment processing routes
+//app.use("/api/payments", paymentRoutes); // payment processing routes
 //app.use("/api/categories", categoryRoutes); // category management routes
 
 
