@@ -1,11 +1,10 @@
 import QRCode from "qrcode";
 import { v4 as uuidv4 } from "uuid";
 // geenerate a unique ticket code and corresponding QR code image
-export const generateTicketCode = async (userId) => 
-  {
-  const ticketCode = uuidv4().substring(0, 12).toupperCase();
-
+export const generateTicketCode = () => {
+  return uuidv4().substring(0, 12).toUpperCase();
 };
+
 
 export const generateQRcode = async (data) => {
 

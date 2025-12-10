@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { generateTicketCode, generateQRCode } from "../utils/qrCodeUtils.js";
+import { generateTicketCode, generateQRcode } from "../utils/qrCodeUtils.js";
 import { sendRegistrationConfirmation } from "../utils/emailUtils.js";
 import { AppError } from "../middleware/errorHandler.js";
 

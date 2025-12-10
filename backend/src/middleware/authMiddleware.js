@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { AppError } from "./errorHandler.js"; // Needs AppError to throw custom HTTP errors
-import { verifyToken } from "../src/utils/tokenUtils.js";
+import { verifyToken } from "../utils/tokenUtils.js";
 
 const prisma = new PrismaClient();
 
-export const protect = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   let token;
 
   // 1. Check if the token is present and correctly formatted in the header

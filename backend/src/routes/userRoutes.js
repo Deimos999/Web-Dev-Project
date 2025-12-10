@@ -1,7 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import { AppError } from "../../middleware/errorHandler.js"; 
-import { protect, admin } from "../../middleware/authMiddleware.js"; 
+import { AppError } from "../middleware/errorHandler.js"; 
+import { authenticate, admin } from "../middleware/authMiddleware.js"; 
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 // ----------------------------------------------------------------------
 
 // GET /api/users/me - Get the currently logged-in user's profile
-router.get("/me", protect, async (req, res, next) => {
+router.get("/me", authenticate, async (req, res, next) => {
   try {
     // req.user is populated by the 'protect' middleware
     res.json(req.user);
@@ -21,7 +21,7 @@ router.get("/me", protect, async (req, res, next) => {
 });
 
 // PUT /api/users/me - Update the currently logged-in user's profile
-router.put("/me", protect, async (req, res, next) => {
+router.put("/me", authenticate, async (req, res, next) => {
   try {
     const { name, phone } = req.body;
     const userId = req.user.id; // User ID from the token/req.user
@@ -57,7 +57,7 @@ router.put("/me", protect, async (req, res, next) => {
 // ----------------------------------------------------------------------
 
 // GET /api/users - List all users (Admin only)
-router.get("/", protect, admin, async (req, res, next) => {
+router.get("/", authenticate, admin, async (req, res, next) => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -78,7 +78,7 @@ router.get("/", protect, admin, async (req, res, next) => {
 });
 
 // GET /api/users/:id - Get a single user by ID (Admin only)
-router.get("/:id", protect, admin, async (req, res, next) => {
+router.get("/:id", authenticate, admin, async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = await prisma.user.findUnique({
@@ -107,7 +107,7 @@ router.get("/:id", protect, admin, async (req, res, next) => {
 });
 
 // PUT /api/users/:id - Update user details, including role (Admin only)
-router.put("/:id", protect, admin, async (req, res, next) => {
+router.put("/:id", authenticate, admin, async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name, phone, email, role } = req.body;
@@ -140,7 +140,7 @@ router.put("/:id", protect, admin, async (req, res, next) => {
 });
 
 // DELETE /api/users/:id - Delete a user (Admin only)
-router.delete("/:id", protect, admin, async (req, res, next) => {
+router.delete("/:id", authenticate, admin, async (req, res, next) => {
   try {
     const { id } = req.params;
 

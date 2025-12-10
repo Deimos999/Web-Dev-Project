@@ -1,29 +1,19 @@
-export const errorHandler = (error, req, res, next) => {
-    console.error(error.stack);
-
-}
-
-const message = error.message || "Irakla's fault  & Internal Error";
-const statuscode = error.statuscode || 500; 
-
-
-res.status(statuscode).json(
-    {
-        error: {
-            message,
-            statuscode,
-            timestamp: new Date().toISOString(),
-        },
-
-    }
-);
-
 export class AppError extends Error {
-    constructor(message, statuscode) {
-        super(message);
-        this.statuscode = statuscode;
-    }
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode || 500;
+    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+    Error.captureStackTrace(this, this.constructor);
+  }
 }
 
 
+export const errorHandler = (err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Irakla's fault & Internal Error";
 
+  res.status(statusCode).json({
+    status: err.status || "error",
+    message,
+  });
+};
