@@ -15,7 +15,15 @@ function ProfilePage() {
   const [cancelingId, setCancelingId] = useState(null);
   const navigate = useNavigate();
 
-  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+  let parsedUser = null;
+  try {
+    parsedUser = JSON.parse(localStorage.getItem("user") || "null");
+  } catch (err) {
+    console.error("Failed to parse stored user:", err);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+  }
+  const currentUser = parsedUser;
 
   // Auth guard
   useEffect(() => {
@@ -52,14 +60,15 @@ function ProfilePage() {
   };
 
   const handleDownloadTicket = async (registration, event) => {
-    setDownloadingId(registration.id);
     try {
       const element = document.getElementById(`ticket-${registration.id}`);
       if (!element) {
         alert("Ticket element not found");
+        setDownloadingId(null);
         return;
       }
 
+      setDownloadingId(registration.id);
       // Convert HTML to canvas with high quality
       const canvas = await html2canvas(element, {
         scale: 2,
@@ -69,6 +78,11 @@ function ProfilePage() {
 
       // Convert canvas to PNG blob
       canvas.toBlob((blob) => {
+        if (!blob) {
+          alert("Failed to generate ticket image. Please try again.");
+          setDownloadingId(null);
+          return;
+        }
         // Create a download link
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");

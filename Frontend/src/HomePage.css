@@ -14,7 +14,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1), rgba(118, 75, 162, 0.1));
+  background: linear-gradient(135deg, rgba(30, 136, 229, 0.1), rgba(13, 71, 161, 0.1), rgba(3, 155, 229, 0.1));
   pointer-events: none;
   z-index: 0;
 }
@@ -31,19 +31,19 @@
   left: 0;
   right: 0;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 249, 250, 0.95));
-  border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+  border-bottom: 2px solid rgba(30, 136, 229, 0.2);
   padding: 15px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 99;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 4px 15px rgba(30, 136, 229, 0.1);
   backdrop-filter: blur(10px);
 }
 
 body.dark-mode .home-navbar {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.98), rgba(22, 33, 62, 0.95));
-  border-color: rgba(240, 147, 251, 0.2);
+  border-color: rgba(30, 136, 229, 0.2);
 }
 
 .navbar-left {
@@ -53,7 +53,7 @@ body.dark-mode .home-navbar {
 .navbar-title {
   margin: 0;
   font-size: 24px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -61,7 +61,7 @@ body.dark-mode .home-navbar {
 }
 
 body.dark-mode .navbar-title {
-  background: linear-gradient(135deg, #667eea, #f093fb);
+  background: linear-gradient(135deg, #1e88e5, #64b5f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -74,7 +74,7 @@ body.dark-mode .navbar-title {
 }
 
 .btn-nav-profile {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -83,12 +83,12 @@ body.dark-mode .navbar-title {
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 14px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
 }
 
 .btn-nav-profile:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 18px rgba(30, 136, 229, 0.4);
 }
 
 .btn-nav-login {
@@ -110,7 +110,7 @@ body.dark-mode .navbar-title {
 }
 
 body.dark-mode .btn-nav-profile {
-  background: linear-gradient(135deg, #764ba2, #f093fb);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
 }
 
 body.dark-mode .btn-nav-login {
@@ -126,17 +126,17 @@ body.dark-mode .btn-nav-login {
   height: 45px;
   cursor: pointer;
   font-size: 22px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
   transition: all 0.3s ease;
 }
 
 .theme-toggle:hover {
   transform: scale(1.1) rotate(20deg);
-  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 18px rgba(30, 136, 229, 0.4);
 }
 
 body.dark-mode .theme-toggle {
-  background: linear-gradient(135deg, #764ba2, #f093fb);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
 }
 
 .homepage-title {
@@ -149,11 +149,11 @@ body.dark-mode .theme-toggle {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: fadeInDown 1s ease forwards;
-  text-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+  text-shadow: 0 2px 10px rgba(30, 136, 229, 0.2);
 }
 
 body.dark-mode .homepage-title {
-  background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1, #64b5f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

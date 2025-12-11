@@ -27,35 +27,35 @@ body.dark-mode .profile-loading {
 
 /* Profile Header */
 .profile-header {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1));
-  border: 2px solid rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, rgba(30, 136, 229, 0.1), rgba(13, 71, 161, 0.1));
+  border: 2px solid rgba(30, 136, 229, 0.2);
   border-radius: 20px;
   padding: 40px;
   display: flex;
   align-items: center;
   gap: 30px;
   margin-bottom: 40px;
-  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 10px 40px rgba(30, 136, 229, 0.1);
   animation: fadeInDown 0.8s ease forwards;
 }
 
 body.dark-mode .profile-header {
-  background: linear-gradient(135deg, rgba(118, 75, 162, 0.2), rgba(240, 147, 251, 0.1));
-  border-color: rgba(240, 147, 251, 0.2);
+  background: linear-gradient(135deg, rgba(30, 136, 229, 0.2), rgba(13, 71, 161, 0.1));
+  border-color: rgba(30, 136, 229, 0.2);
 }
 
 .profile-avatar {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 48px;
   font-weight: 700;
   color: white;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(30, 136, 229, 0.3);
 }
 
 .profile-info {
@@ -65,14 +65,14 @@ body.dark-mode .profile-header {
 .profile-info h1 {
   margin: 0 0 10px 0;
   font-size: 32px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 body.dark-mode .profile-info h1 {
-  background: linear-gradient(135deg, #667eea, #f093fb);
+  background: linear-gradient(135deg, #1e88e5, #64b5f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -99,7 +99,7 @@ body.dark-mode .profile-role {
 }
 
 .role-badge {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
   color: white;
   padding: 4px 12px;
   border-radius: 20px;
@@ -137,7 +137,7 @@ body.dark-mode .profile-role {
 
 .stat-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.9));
-  border: 2px solid rgba(102, 126, 234, 0.2);
+  border: 2px solid rgba(30, 136, 229, 0.2);
   border-radius: 15px;
   padding: 20px;
   text-align: center;
@@ -147,18 +147,18 @@ body.dark-mode .profile-role {
 
 body.dark-mode .stat-card {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.9));
-  border-color: rgba(240, 147, 251, 0.2);
+  border-color: rgba(30, 136, 229, 0.2);
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 12px 35px rgba(30, 136, 229, 0.2);
 }
 
 .stat-number {
   font-size: 32px;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -196,13 +196,13 @@ body.dark-mode .registrations-section h2 {
   text-align: center;
   padding: 60px 20px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.9));
-  border: 2px dashed rgba(102, 126, 234, 0.2);
+  border: 2px dashed rgba(30, 136, 229, 0.2);
   border-radius: 15px;
 }
 
 body.dark-mode .empty-state {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.9));
-  border-color: rgba(240, 147, 251, 0.2);
+  border-color: rgba(30, 136, 229, 0.2);
 }
 
 .empty-state p {
@@ -223,7 +223,7 @@ body.dark-mode .empty-state p {
 /* Registration Card */
 .registration-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 249, 250, 0.95));
-  border: 2px solid rgba(102, 126, 234, 0.15);
+  border: 2px solid rgba(30, 136, 229, 0.15);
   border-radius: 18px;
   padding: 25px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
@@ -233,13 +233,13 @@ body.dark-mode .empty-state p {
 
 body.dark-mode .registration-card {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.98), rgba(22, 33, 62, 0.95));
-  border-color: rgba(240, 147, 251, 0.15);
+  border-color: rgba(30, 136, 229, 0.15);
 }
 
 .registration-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
-  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 12px 40px rgba(30, 136, 229, 0.15);
+  border-color: rgba(30, 136, 229, 0.3);
 }
 
 .registration-header {
@@ -247,14 +247,14 @@ body.dark-mode .registration-card {
   justify-content: space-between;
   align-items: start;
   margin-bottom: 15px;
-  border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+  border-bottom: 2px solid rgba(30, 136, 229, 0.1);
   padding-bottom: 15px;
 }
 
 .registration-header h3 {
   margin: 0;
   font-size: 22px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -263,7 +263,7 @@ body.dark-mode .registration-card {
 .registration-date {
   font-size: 12px;
   color: #999;
-  background: rgba(102, 126, 234, 0.1);
+  background: rgba(30, 136, 229, 0.1);
   padding: 4px 12px;
   border-radius: 20px;
   white-space: nowrap;
@@ -276,12 +276,12 @@ body.dark-mode .registration-card {
   gap: 15px;
   margin-bottom: 20px;
   padding: 15px;
-  background: rgba(102, 126, 234, 0.05);
+  background: rgba(30, 136, 229, 0.05);
   border-radius: 12px;
 }
 
 body.dark-mode .event-details {
-  background: rgba(240, 147, 251, 0.05);
+  background: rgba(30, 136, 229, 0.05);
 }
 
 .detail-item {
@@ -321,16 +321,16 @@ body.dark-mode .detail-value {
 
 /* Event Criteria */
 .event-criteria {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(240, 147, 251, 0.08));
+  background: linear-gradient(135deg, rgba(30, 136, 229, 0.08), rgba(13, 71, 161, 0.08));
   padding: 15px;
   border-radius: 12px;
   margin-bottom: 20px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #1e88e5;
 }
 
 body.dark-mode .event-criteria {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(240, 147, 251, 0.12));
-  border-left-color: #f093fb;
+  background: linear-gradient(135deg, rgba(30, 136, 229, 0.12), rgba(13, 71, 161, 0.12));
+  border-left-color: #1e88e5;
 }
 
 .event-criteria h4 {

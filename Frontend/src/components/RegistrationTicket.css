@@ -16,7 +16,7 @@
 
 .ticket-left {
   flex: 1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
   color: white;
   padding: 20px;
   display: flex;
@@ -63,7 +63,7 @@
 
 .ticket-right {
   width: 160px;
-  background: linear-gradient(135deg, rgba(240, 147, 251, 0.15), rgba(102, 126, 234, 0.1));
+  background: linear-gradient(135deg, rgba(13, 71, 161, 0.15), rgba(30, 136, 229, 0.1));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -86,7 +86,7 @@
 .ticket-number {
   font-size: 11px;
   font-weight: 700;
-  color: #667eea;
+  color: #1e88e5;
   letter-spacing: 1px;
   text-align: center;
   word-break: break-all;
@@ -137,7 +137,7 @@
 /* Ticket Footer */
 .ticket-footer {
   padding: 12px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
   color: white;
   text-align: center;
   border-top: 2px dashed rgba(255, 255, 255, 0.3);

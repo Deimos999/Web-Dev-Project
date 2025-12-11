@@ -20,7 +20,7 @@ function HomePage() {
   const [role, setRole] = useState("user");
   const [showConfetti, setShowConfetti] = useState(false);
   const [loadingEvents, setLoadingEvents] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const navigate = useNavigate();
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "null");
