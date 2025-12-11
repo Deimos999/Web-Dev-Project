@@ -53,11 +53,9 @@ function HomePage() {
     return () => observer.disconnect();
   }, []);
 
-  // Auth guard
+  // Auth guard - Allow viewing without login, but show login prompts when needed
   useEffect(() => {
-    if (!currentUser) {
-      navigate("/signin");
-    } else {
+    if (currentUser) {
       setRole(currentUser.role);
     }
   }, []);
@@ -79,8 +77,11 @@ function HomePage() {
 
         setEvents(eventsWithTickets);
 
-        const regRes = await getRegistrations();
-        setRegistrations(regRes.data);
+        // Only fetch registrations if user is logged in
+        if (currentUser) {
+          const regRes = await getRegistrations();
+          setRegistrations(regRes.data);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -88,9 +89,15 @@ function HomePage() {
       }
     }
     fetchData();
-  }, []);
+  }, [currentUser]);
 
   const handleRegister = async (event, ticketId) => {
+    // Check if user is logged in
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+
     try {
       const res = await registerUser({ eventId: event.id, ticketId });
       setRegistrations([...registrations, res.data]);
@@ -148,51 +155,72 @@ function HomePage() {
           <h2 className="navbar-title">🎉 Event Platform</h2>
         </div>
         <div className="navbar-right">
-          <button 
-            className="btn-nav-profile" 
-            onClick={() => navigate("/profile")}
-            title="View your profile"
-          >
-            👤 My Profile
-          </button>
-          <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
-            {darkMode ? "☀️" : "🌙"}
-          </button>
+          {currentUser ? (
+            <>
+              <button 
+                className="btn-nav-profile" 
+                onClick={() => navigate("/profile")}
+                title="View your profile"
+              >
+                👤 My Profile
+              </button>
+              <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+                {darkMode ? "☀️" : "🌙"}
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                className="btn-nav-login" 
+                onClick={() => navigate("/login")}
+                title="Sign in to register for events"
+              >
+                🔓 Sign In / Sign Up
+              </button>
+              <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+                {darkMode ? "☀️" : "🌙"}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       <h1 className="homepage-title">Discover Amazing Events</h1>
       <p className="homepage-subtitle">Find and register for events that interest you</p>
 
-      <div className="role-switch">
-        <button 
-          className={role === "user" ? "active" : ""} 
-          onClick={() => setRole("user")}
-        >
-          User
-        </button>
-        <button 
-          className={role === "organizer" ? "active" : ""} 
-          onClick={() => setRole("organizer")}
-        >
-          Organizer
-        </button>
-        <button 
-          className={role === "admin" ? "active" : ""} 
-          onClick={() => setRole("admin")}
-        >
-          Admin
-        </button>
-      </div>
+      {currentUser && (
+        <>
+          <div className="role-switch">
+            <button 
+              className={role === "user" ? "active" : ""} 
+              onClick={() => setRole("user")}
+            >
+              User
+            </button>
+            <button 
+              className={role === "organizer" ? "active" : ""} 
+              onClick={() => setRole("organizer")}
+            >
+              Organizer
+            </button>
+            <button 
+              className={role === "admin" ? "active" : ""} 
+              onClick={() => setRole("admin")}
+            >
+              Admin
+            </button>
+          </div>
 
-      {role === "organizer" && (
-        <div className="create-event-form shadow-card">
-          <h3>Create Event</h3>
-          <input type="text" id="title" placeholder="Title" />
-          <input type="date" id="date" />
-          <input type="time" id="time" />
-          <button onClick={handleCreateEvent} className="btn-primary">Create Event</button>
-        </div>
+          {role === "organizer" && (
+            <div className="create-event-form shadow-card">
+              <h3>Create Event</h3>
+              <input type="text" id="title" placeholder="Title" />
+              <input type="date" id="date" />
+              <input type="time" id="time" />
+              <button onClick={handleCreateEvent} className="btn-primary">Create Event</button>
+            </div>
+          )}
+        </>
       )}
 
       <h2>Events</h2>

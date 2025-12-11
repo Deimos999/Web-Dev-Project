@@ -91,8 +91,30 @@ body.dark-mode .navbar-title {
   box-shadow: 0 6px 18px rgba(102, 126, 234, 0.4);
 }
 
+.btn-nav-login {
+  background: linear-gradient(135deg, #00e676, #00c853);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 230, 118, 0.3);
+}
+
+.btn-nav-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 230, 118, 0.4);
+}
+
 body.dark-mode .btn-nav-profile {
   background: linear-gradient(135deg, #764ba2, #f093fb);
+}
+
+body.dark-mode .btn-nav-login {
+  background: linear-gradient(135deg, #00e676, #00c853);
 }
 
 .theme-toggle {
