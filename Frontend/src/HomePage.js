@@ -4,7 +4,6 @@ import EventCard from "./components/EventCard";
 import TicketModal from "./components/TicketModal";
 import FirstPage from "./pages/FirstPage";
 import HomePage from "./HomePage";
-
 import SignInPage from "./pages/SignInPage";
 import Confetti from "react-confetti";
 

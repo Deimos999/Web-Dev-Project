@@ -4,8 +4,9 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import registrationRoutes from "./routes/registrationRoutes.js";
+import eventRoutes from "./routes/eventRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
-//import categoryRoutes from "./routes/categoryRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 dotenv.config();
@@ -24,11 +25,12 @@ app.get("/", (req, res) => {
   res.send("API running");
 });
 
-app.use("/api/auth", authRoutes); //authenticatoon routes
-app.use("/api/registaration", registrationRoutes); // registrtion routes
-app.use("/api/users", userRoutes); // user management routes
-//app.use("/api/payments", paymentRoutes); // payment processing routes
-//app.use("/api/categories", categoryRoutes); // category management routes
+app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes); // ADD THIS!
+app.use("/api/registration", registrationRoutes); // FIXED!
+app.use("/api/users", userRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/categories", categoryRoutes); // user management routes
 
 
 //health check route 
