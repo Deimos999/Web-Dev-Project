@@ -235,6 +235,18 @@ const SignInPage = () => {
                 {isLogin ? "Sign Up" : "Sign In"}
               </button>
             </div>
+
+            {isLogin && (
+              <div className="forgot-section">
+                <button
+                  type="button"
+                  className="forgot-link"
+                  onClick={() => navigate("/forgot-password")}
+                >
+                  Forgot your password?
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

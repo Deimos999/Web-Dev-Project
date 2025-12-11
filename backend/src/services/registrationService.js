@@ -149,9 +149,8 @@ export const cancelRegistration = async (registrationId, userId) => {
     data: { sold: { decrement: 1 } },
   });
 
-  const canceledRegistration = await prisma.registration.update({
+  const canceledRegistration = await prisma.registration.delete({
     where: { id: registrationId },
-    data: { status: "cancelled" },
     include: { user: true, event: true, ticket: true },
   });
 

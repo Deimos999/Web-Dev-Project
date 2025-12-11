@@ -10,43 +10,68 @@ const EventCard = ({
   registrations,
   onDeleteRegistration
 }) => {
+  const start = event.startTime ? new Date(event.startTime) : null;
+  const end = event.endTime ? new Date(event.endTime) : null;
+  const startDate = start ? start.toLocaleDateString() : "TBD";
+  const timeRange = start && end
+    ? `${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+    : "Time TBA";
+
+  const isRegistered = registrations.some((r) => r.userId === currentUser?.id);
+  const bgStyle = event.imageUrl
+    ? { backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.65) 55%, rgba(0,0,0,0.7) 100%), url(${event.imageUrl})` }
+    : undefined;
+
   return (
     <div className="event-card">
+      {event.imageUrl && <div className="event-card-bg" style={{ backgroundImage: `url(${event.imageUrl})` }}></div>}
+      <div className="event-card-overlay"></div>
+      <div className="event-card-content">
+        <div className="event-meta">
+        <div className="chip">{event.category?.name || "Event"}</div>
+        {event.isFeatured && <div className="chip featured">Featured</div>}
+      </div>
       <h3>{event.title}</h3>
-      <p>Date: {event.date}</p>
-      <p>Time: {event.time}</p>
+      <p className="event-desc">{event.description}</p>
+      <div className="event-details">
+        <span>📅 {startDate}</span>
+        <span>⏰ {timeRange}</span>
+        <span>📍 {event.timezone || "UTC"}</span>
+      </div>
 
       {/* User view: Register button */}
       {role === "user" && (
-        <>
-          {registrations.find(r => r.user === currentUser) ? (
-            <p>You are already registered ✅</p>
+        <div className="action-row">
+          {isRegistered ? (
+            <>
+              <p className="registered-pill">You are registered ✅</p>
+              {registrations
+                .filter(r => r.userId === currentUser?.id)
+                .map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => onDeleteRegistration(r.id)}
+                    className="delete-reg-btn"
+                  >
+                    Unregister
+                  </button>
+                ))}
+            </>
           ) : (
             <button onClick={() => onRegister(event.tickets?.[0]?.id)} className="register-btn">
               Register
             </button>
           )}
-
-          {/* Show delete registration button */}
-          {registrations
-            .filter(r => r.user === currentUser)
-            .map(r => (
-              <button
-                key={r.id}
-                onClick={() => onDeleteRegistration(r.id)}
-                className="delete-reg-btn"
-              >
-                Delete Registration
-              </button>
-            ))}
-        </>
+        </div>
       )}
 
       {/* Organizer view: Delete event */}
       {role === "organizer" && (
-        <button onClick={onDelete} className="delete-event-btn">
-          Delete Event
-        </button>
+        <div className="action-row">
+          <button onClick={onDelete} className="delete-event-btn">
+            Delete Event
+          </button>
+        </div>
       )}
 
       {/* Admin view: Show attendees */}
@@ -60,6 +85,7 @@ const EventCard = ({
           </ul>
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -230,6 +230,7 @@ function HomePage() {
             key={event.id}
             event={event}
             role={role}
+            currentUser={currentUser}
             onRegister={(ticketId) => handleRegister(event, ticketId)}
             onDelete={() => handleDeleteEvent(event.id)}
             registrations={registrations.filter(r => r.eventId === event.id)}

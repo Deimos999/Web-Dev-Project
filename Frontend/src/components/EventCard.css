@@ -1,103 +1,169 @@
 .event-card {
-  width: 260px;
-  padding: 20px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1));
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(102, 126, 234, 0.3);
-  color: #333;
-  transition: all 0.4s ease;
-  cursor: pointer;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out, border-color 0.4s ease-in-out;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  background: #0f172a;
 }
 
-body.dark-mode .event-card {
-  color: #f0f0f0;
-  background: linear-gradient(135deg, rgba(118, 75, 162, 0.2), rgba(240, 147, 251, 0.1));
-  border-color: rgba(240, 147, 251, 0.4);
+.event-card-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: transform 0.4s ease-in-out;
+  transform: scale(1);
+}
+
+.event-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.65) 55%, rgba(0,0,0,0.7) 100%);
+  z-index: 1;
+}
+
+.event-card-content {
+  position: relative;
+  z-index: 2;
+  padding: 22px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+body:not(.dark-mode) .event-card {
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
 }
 
 .event-card:hover {
-  transform: translateY(-10px) scale(1.02);
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(240, 147, 251, 0.15));
-  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.25);
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.45);
 }
 
-body.dark-mode .event-card:hover {
-  background: linear-gradient(135deg, rgba(118, 75, 162, 0.3), rgba(240, 147, 251, 0.2));
-  box-shadow: 0 15px 40px rgba(240, 147, 251, 0.2);
+.event-card:hover .event-card-bg {
+  transform: scale(1.15);
+}
+
+.event-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  font-size: 12px;
+  backdrop-filter: blur(6px);
+}
+
+.chip.featured {
+  background: linear-gradient(135deg, #f97316, #f59e0b);
+  color: #0f172a;
 }
 
 .event-card h3 {
-  margin-top: 0;
-  color: inherit;
-  font-size: 1.3rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  margin: 12px 0 8px;
+  font-size: 1.4rem;
+  color: #fff;
 }
 
-body.dark-mode .event-card h3 {
-  background: linear-gradient(135deg, #667eea, #f093fb);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+body:not(.dark-mode) .event-card h3 {
+  color: #0f172a;
 }
 
-.event-card p {
-  margin: 5px 0;
-  font-size: 0.9rem;
-  opacity: 0.8;
+.event-desc {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  color: rgba(248, 250, 252, 0.9);
+  line-height: 1.4;
 }
 
-.event-card button {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 10px 16px;
+body:not(.dark-mode) .event-desc {
+  color: #1f2937;
+}
+
+.event-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 0.92rem;
+  color: #e2e8f0;
+}
+
+body:not(.dark-mode) .event-details {
+  color: #111827;
+}
+
+.action-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.register-btn {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
   border: none;
+  padding: 10px 16px;
   border-radius: 12px;
   font-weight: 700;
-  transition: all 0.3s ease;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.event-card button:hover {
+.register-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
 }
 
-/* BUTTON COLORS */
-.event-card button:not(.cancel):not(.delete) {
-  background: linear-gradient(135deg, #00e676, #00c853);
-  color: #000;
+.delete-reg-btn,
+.delete-event-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
   font-weight: 700;
-}
-.event-card button.cancel {
-  background: linear-gradient(135deg, #ff5252, #ff1744);
-  color: white;
-}
-.event-card button.delete {
-  background: linear-gradient(135deg, #ff1744, #d32f2f);
-  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.event-card ul.attendee-list {
-  list-style: none;
-  text-align: left;
-  padding: 0;
-  font-size: 0.85rem;
+.delete-reg-btn:hover,
+.delete-event-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.35);
 }
 
-.event-card ul.attendee-list li {
-  background: rgba(102, 126, 234, 0.15);
-  padding: 6px 10px;
-  margin: 4px 0;
-  border-radius: 8px;
-  border-left: 3px solid #667eea;
+.registered-pill {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #bbf7d0;
+  font-weight: 600;
 }
 
-body.dark-mode .event-card ul.attendee-list li {
-  background: rgba(240, 147, 251, 0.15);
-  border-left-color: #f093fb;
+body:not(.dark-mode) .registered-pill {
+  color: #166534;
+  background: rgba(34, 197, 94, 0.12);
 }

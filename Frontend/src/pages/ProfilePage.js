@@ -117,7 +117,8 @@ function ProfilePage() {
     setCancelingId(registration.id);
     try {
       await deleteRegistration(registration.id);
-      
+      // Optimistically remove locally for immediate UI update
+      setRegistrations((prev) => prev.filter((r) => r.id !== registration.id));
       // Refetch registrations to sync with backend
       const updatedRegsRes = await getRegistrations();
       setRegistrations(updatedRegsRes.data);

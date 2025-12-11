@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import compression from "compression";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -17,8 +18,18 @@ const PORT = process.env.PORT || 4000; // app will run on port 4000 if PORT is n
 
 ///this part for midlleware
 app.use(cors());
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true}));
+
+// Lightweight cache headers for public GET routes
+const cacheablePaths = [/^\/api\/events/, /^\/api\/tickets/, /^\/api\/categories/];
+app.use((req, res, next) => {
+  if (req.method === "GET" && cacheablePaths.some((re) => re.test(req.path))) {
+    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
+  }
+  next();
+});
 
 //for API routes
 

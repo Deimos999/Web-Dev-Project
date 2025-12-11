@@ -44,3 +44,23 @@ export const sendPaymentReceipt = async (email, eventTitle, amount) => {
   `;
   return sendEmail(email, `Payment Receipt - ${eventTitle}`, htmlContent);
 };
+
+export const sendPasswordResetEmail = async (email, resetUrl) => {
+  const htmlContent = `
+    <h2>Password Reset Requested</h2>
+    <p>We received a request to reset your password.</p>
+    <p>Click the button below to set a new password. This link will expire in 1 hour.</p>
+    <p style="margin: 20px 0;">
+      <a href="${resetUrl}" style="
+        background: #4f46e5;
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-block;
+      ">Reset Password</a>
+    </p>
+    <p>If you did not request this, you can safely ignore this email.</p>
+  `;
+  return sendEmail(email, "Reset your password", htmlContent);
+};
