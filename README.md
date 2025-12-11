@@ -1,697 +1,500 @@
-# 🎫 Virtual Event Registration Platform
+# Event Registration System
 
-A comprehensive event registration and management platform for organizing virtual events with ticketing, payments, and attendee management.
+A full-stack web application for online event registration with ticket management, QR codes, and user profiles.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
-![React](https://img.shields.io/badge/react-18.2.0-blue.svg)
+## Tech Stack
 
-## 📋 Table of Contents
+- **Frontend**: React 19 with React Router
+- **Backend**: Node.js with Express
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT Tokens
+- **Ticket Generation**: QR Codes with html2canvas
 
-- [Overview](#overview)
-- [System Architecture](#system-architecture)
-- [Database Schema](#database-schema)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [API Documentation](#api-documentation)
-- [Deployment](#deployment)
+## Project Structure
 
-## 🎯 Overview
-
-A full-stack event registration platform that enables organizers to create and manage virtual events, sell tickets, and handle attendee registrations with integrated payment processing and automated notifications.
-
-### Key Capabilities
-
-- 🎫 Event discovery and browsing
-- 💳 Integrated payment processing (Stripe)
-- 📝 Multi-tier ticketing system
-- 📊 Analytics dashboard for organizers
-- 📧 Automated email notifications
-- 🎨 Responsive design (mobile & desktop)
-- 🎟️ QR code ticket generation
-- 📅 Calendar integration
-
-## 🏗️ System Architecture
-
-### High-Level Architecture
-
-```mermaid
-graph TB
-    subgraph "Client Layer"
-        A[Web Browser]
-        B[Mobile Browser]
-    end
-    
-    subgraph "Frontend - React App"
-        C[React Components]
-        D[State Management]
-        E[Payment UI]
-    end
-    
-    subgraph "Backend Services"
-        F[Express API Server]
-        G[Background Jobs]
-    end
-    
-    subgraph "Data Layer"
-        I[(PostgreSQL)]
-        J[(Redis Cache)]
-    end
-    
-    subgraph "External Services"
-        K[Stripe Payments]
-        L[SendGrid Email]
-        N[Clerk Auth]
-        O[QR Code Generator]
-    end
-    
-    A --> C
-    B --> C
-    C --> F
-    F --> I
-    F --> K
-    F --> L
-    F --> N
-    F --> O
-    G --> I
-    G --> L
-    F --> J
+```
+├── Frontend/              # React frontend application
+│   ├── public/
+│   ├── src/
+│   │   ├── components/    # Reusable React components
+│   │   ├── pages/         # Page components
+│   │   ├── App.js
+│   │   ├── api.js         # API client
+│   │   └── index.js
+│   └── package.json
+├── backend/               # Express backend server
+│   ├── prisma/            # Database schema & migrations
+│   ├── src/
+│   │   ├── routes/        # API routes
+│   │   ├── services/      # Business logic
+│   │   ├── middleware/    # Express middleware
+│   │   ├── utils/         # Utility functions
+│   │   └── server.js      # Server entry point
+│   └── package.json
+├── README.md
+└── API_DOCUMENTATION.md
 ```
 
-### Detailed Component Architecture
+## Prerequisites
 
-```mermaid
-graph LR
-    subgraph "Frontend Application"
-        A1[Event Listing]
-        A2[Event Details]
-        A3[Registration Flow]
-        A4[Ticket Selection]
-        A5[User Dashboard]
-        A6[Admin Panel]
-        A7[My Tickets]
-    end
-    
-    subgraph "API Layer"
-        B1[Auth Routes]
-        B2[Event Routes]
-        B3[Registration Routes]
-        B4[Payment Routes]
-        B5[Ticket Routes]
-        B6[Analytics Routes]
-    end
-    
-    subgraph "Business Logic"
-        C1[Auth Service]
-        C2[Event Service]
-        C3[Registration Service]
-        C4[Payment Service]
-        C5[Ticket Service]
-        C6[Notification Service]
-    end
-    
-    A1 --> B2
-    A2 --> B2
-    A3 --> B3
-    A4 --> B4
-    A5 --> B1
-    A6 --> B2
-    A7 --> B5
-    
-    B1 --> C1
-    B2 --> C2
-    B3 --> C3
-    B4 --> C4
-    B5 --> C5
-    B3 --> C6
+Before you begin, ensure you have the following installed:
+
+- **Node.js** (v16 or higher)
+- **npm** or **yarn**
+- **PostgreSQL** (v12 or higher)
+- **Git**
+
+## Installation & Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd Class-Project
 ```
 
-### Data Flow - Registration Process
+### 2. Backend Setup
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant F as Frontend
-    participant A as API Server
-    participant DB as Database
-    participant S as Stripe
-    participant E as Email Service
-    participant Q as QR Service
-    
-    U->>F: Browse Events
-    F->>A: GET /api/events
-    A->>DB: Query events
-    DB-->>A: Return events
-    A-->>F: Event list
-    
-    U->>F: Select Event & Ticket
-    F->>A: POST /api/registrations
-    A->>DB: Check availability
-    DB-->>A: Tickets available
-    A->>S: Create checkout session
-    S-->>A: Session URL
-    A-->>F: Return checkout URL
-    
-    F->>S: Redirect to Stripe
-    U->>S: Complete payment
-    S->>A: Webhook: payment_success
-    A->>DB: Create registration
-    A->>Q: Generate QR code
-    Q-->>A: QR code image
-    A->>E: Send confirmation email
-    E-->>U: Email with ticket
-    A-->>F: Registration confirmed
-    F->>U: Show success page
+Navigate to the backend directory and install dependencies:
+
+```bash
+cd backend
+npm install
 ```
 
-### Ticket Generation Flow
+### 3. Configure Environment Variables
 
-```mermaid
-graph TB
-    A[Payment Confirmed] --> B[Create Registration]
-    B --> C[Generate Unique Ticket ID]
-    C --> D[Create QR Code]
-    D --> E[Store Ticket Data]
-    E --> F{Email Template}
-    F --> G[PDF Ticket]
-    F --> H[HTML Email]
-    G --> I[Send to User]
-    H --> I
-    I --> J[Update Notification Status]
+Create a `.env` file in the backend directory with the following variables:
+
+```env
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/event_registration"
+
+# JWT
+JWT_SECRET="your_jwt_secret_key_here"
+
+# Server
+PORT=5000
+NODE_ENV=development
+
+# Email (Optional - for email notifications)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
 ```
 
-## 🗄️ Database Schema
+### 4. Setup PostgreSQL Database
 
-### Entity Relationship Diagram
+Make sure PostgreSQL is running, then create the database:
 
-```mermaid
-erDiagram
-    USERS ||--o{ REGISTRATIONS : creates
-    USERS ||--o{ EVENTS : organizes
-    EVENTS ||--o{ REGISTRATIONS : has
-    EVENTS ||--o{ TICKETS : offers
-    EVENTS ||--o{ CATEGORIES : belongs_to
-    REGISTRATIONS ||--|| PAYMENTS : has
-    REGISTRATIONS ||--|| TICKETS : generates
-    
-    USERS {
-        uuid id PK
-        string email UK
-        string name
-        string role
-        string phone
-        timestamp created_at
-    }
-    
-    EVENTS {
-        uuid id PK
-        string title
-        text description
-        string image_url
-        timestamp start_time
-        timestamp end_time
-        string timezone
-        string meeting_link
-        int capacity
-        uuid organizer_id FK
-        uuid category_id FK
-        string status
-        boolean is_featured
-    }
-    
-    TICKETS {
-        uuid id PK
-        uuid event_id FK
-        string ticket_type
-        string name
-        text description
-        decimal price
-        int quantity
-        int sold
-        timestamp sale_start
-        timestamp sale_end
-    }
-    
-    REGISTRATIONS {
-        uuid id PK
-        uuid user_id FK
-        uuid event_id FK
-        uuid ticket_id FK
-        string status
-        uuid payment_id FK
-        string ticket_code
-        string qr_code_url
-        boolean checked_in
-        timestamp registered_at
-    }
-    
-    PAYMENTS {
-        uuid id PK
-        uuid registration_id FK
-        string stripe_payment_id
-        decimal amount
-        string currency
-        string status
-        timestamp paid_at
-    }
-    
-    CATEGORIES {
-        uuid id PK
-        string name
-        string slug
-        string color
-    }
+```bash
+# Using psql
+psql -U postgres
+CREATE DATABASE event_registration;
 ```
 
-### Prisma Schema
+### 5. Run Prisma Migrations
 
-```prisma
-model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  name          String
-  phone         String?
-  role          String         @default("user")
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  registrations Registration[]
-  events        Event[]
-}
+In the backend directory, run:
 
-model Event {
-  id            String         @id @default(uuid())
-  title         String
-  description   String
-  imageUrl      String
-  startTime     DateTime
-  endTime       DateTime
-  timezone      String         @default("UTC")
-  meetingLink   String?
-  capacity      Int
-  organizerId   String
-  categoryId    String
-  status        String         @default("draft")
-  isFeatured    Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  organizer     User           @relation(fields: [organizerId], references: [id])
-  category      Category       @relation(fields: [categoryId], references: [id])
-  registrations Registration[]
-  tickets       Ticket[]
-}
-
-model Ticket {
-  id            String         @id @default(uuid())
-  eventId       String
-  ticketType    String         // "free", "paid", "earlybird", "vip"
-  name          String
-  description   String?
-  price         Decimal        @default(0)
-  quantity      Int
-  sold          Int            @default(0)
-  saleStart     DateTime?
-  saleEnd       DateTime?
-  event         Event          @relation(fields: [eventId], references: [id])
-  registrations Registration[]
-}
-
-model Registration {
-  id            String    @id @default(uuid())
-  userId        String
-  eventId       String
-  ticketId      String
-  status        String    @default("pending")
-  paymentId     String?   @unique
-  ticketCode    String    @unique
-  qrCodeUrl     String?
-  checkedIn     Boolean   @default(false)
-  registeredAt  DateTime  @default(now())
-  user          User      @relation(fields: [userId], references: [id])
-  event         Event     @relation(fields: [eventId], references: [id])
-  ticket        Ticket    @relation(fields: [ticketId], references: [id])
-  payment       Payment?  @relation(fields: [paymentId], references: [id])
-  
-  @@unique([userId, eventId])
-}
-
-model Payment {
-  id              String        @id @default(uuid())
-  stripePaymentId String        @unique
-  amount          Decimal
-  currency        String        @default("usd")
-  status          String
-  paidAt          DateTime      @default(now())
-  registration    Registration?
-}
-
-model Category {
-  id      String  @id @default(uuid())
-  name    String
-  slug    String  @unique
-  color   String  @default("#6366f1")
-  events  Event[]
-}
-
-model PromoCode {
-  id          String   @id @default(uuid())
-  code        String   @unique
-  discount    Decimal  // percentage or fixed amount
-  type        String   // "percentage" or "fixed"
-  maxUses     Int
-  usedCount   Int      @default(0)
-  validFrom   DateTime
-  validUntil  DateTime
-  isActive    Boolean  @default(true)
-}
+```bash
+npx prisma migrate dev --name init
 ```
 
-## ✨ Features
+This will:
+- Create all database tables
+- Create the Prisma client
+- Optionally seed the database with test data
+
+### 6. Seed the Database (Optional)
+
+To populate the database with sample data:
+
+```bash
+node prisma/seed.js
+```
+
+### 7. Frontend Setup
+
+Navigate to the frontend directory and install dependencies:
+
+```bash
+cd ../Frontend
+npm install
+```
+
+### 8. Configure Frontend API
+
+Create a `.env` file in the Frontend directory (if not exists):
+
+```env
+REACT_APP_API_URL=http://localhost:5000/api
+```
+
+Alternatively, update the API base URL in `Frontend/src/api.js` if needed.
+
+## Running the Application
+
+### Start Backend Server
+
+From the backend directory:
+
+```bash
+npm start
+```
+
+The server will run on `http://localhost:5000`
+
+You should see:
+```
+Server running on port 5000
+Database connected
+```
+
+### Start Frontend Development Server
+
+From the Frontend directory:
+
+```bash
+npm start
+```
+
+The application will open in your browser at `http://localhost:3000`
+
+### Running Both Servers Simultaneously
+
+Option 1: Use two terminal windows
+```bash
+# Terminal 1 - Backend
+cd backend && npm start
+
+# Terminal 2 - Frontend
+cd Frontend && npm start
+```
+
+Option 2: Use a process manager like `concurrently` (if installed)
+```bash
+npm install -g concurrently
+concurrently "npm run start:backend" "npm run start:frontend"
+```
+
+## Available Scripts
+
+### Backend Scripts
+
+In the `backend/` directory:
+
+```bash
+# Start the server
+npm start
+
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run a specific test file
+npm test api.test.js
+
+# Seed database with sample data
+node prisma/seed.js
+
+# Open Prisma Studio (visual database editor)
+npx prisma studio
+```
+
+### Frontend Scripts
+
+In the `Frontend/` directory:
+
+```bash
+# Start development server
+npm start
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+
+# Eject configuration (careful - irreversible!)
+npm run eject
+```
+
+## Database Management
+
+### View Database with Prisma Studio
+
+```bash
+cd backend
+npx prisma studio
+```
+
+Opens a visual database editor at `http://localhost:5555`
+
+### Reset Database
+
+```bash
+cd backend
+npx prisma migrate reset
+```
+
+⚠️ **Warning**: This will delete all data and recreate the schema.
+
+### Create a New Migration
+
+After changing the schema in `prisma/schema.prisma`:
+
+```bash
+cd backend
+npx prisma migrate dev --name describe_your_changes
+```
+
+## Authentication
+
+The application uses JWT (JSON Web Tokens) for authentication:
+
+1. User registers or logs in
+2. Server returns a JWT token
+3. Token is stored in localStorage
+4. All subsequent requests include the token in the Authorization header
+
+### Demo Credentials
+
+The seeded database includes demo accounts:
+
+- **User Account**
+  - Email: `user@example.com`
+  - Password: `password123`
+
+- **Organizer Account**
+  - Email: `organizer1@example.com`
+  - Password: `password123`
+
+## Features
 
 ### User Features
-- ✅ Browse and search events
-- ✅ Filter by category, date, price, location
-- ✅ View detailed event information
-- ✅ Select ticket types (Free, Paid, Early Bird, VIP)
-- ✅ Secure payment processing with Stripe
-- ✅ Receive confirmation emails with tickets
-- ✅ Download PDF tickets with QR codes
+- ✅ User registration and authentication
+- ✅ Browse events
+- ✅ Register for events
+- ✅ Download event tickets as PNG images
+- ✅ View event QR codes
 - ✅ View registration history
-- ✅ Add events to calendar (ICS file)
-- ✅ Apply promo codes for discounts
-- ✅ Update profile and preferences
+- ✅ User profile management
 
 ### Organizer Features
 - ✅ Create and manage events
-- ✅ Set up multiple ticket tiers
-- ✅ Configure pricing and capacity
-- ✅ Upload event images and materials
-- ✅ Track registrations in real-time
-- ✅ View analytics dashboard
-  - Total registrations
-  - Revenue tracking
-  - Ticket sales by type
-  - Registration trends
-- ✅ Export attendee lists (CSV/Excel)
-- ✅ Send bulk emails to attendees
-- ✅ Scan QR codes for check-in
-- ✅ Create promo codes
-- ✅ Manage event status (draft, published, cancelled)
+- ✅ View registrations
+- ✅ Manage event status
+- ✅ Export registration data
 
-### Admin Features
-- ✅ User management
-- ✅ Event approval workflow
-- ✅ System-wide analytics
-- ✅ Revenue tracking across all events
-- ✅ Category management
-- ✅ Platform settings
+### Ticket System
+- ✅ Generate unique ticket codes
+- ✅ QR code generation
+- ✅ Download tickets as images
+- ✅ Print-ready ticket format
 
-## 🛠️ Tech Stack
+## API Endpoints
 
-### Frontend
-- **Framework:** React 18 + Vite
-- **Styling:** TailwindCSS
-- **State Management:** Zustand / React Query
-- **Routing:** React Router v6
-- **Forms:** React Hook Form + Zod
-- **UI Components:** Shadcn UI
-- **Date Handling:** date-fns
-- **QR Code:** qrcode.react
+For a complete list of API endpoints, see [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
 
-### Backend
-- **Runtime:** Node.js 18+
-- **Framework:** Express.js
-- **ORM:** Prisma
-- **Authentication:** Clerk / JWT
-- **Job Queue:** Bull (Redis-based)
-- **Email:** SendGrid / Resend
-- **Payments:** Stripe
-- **PDF Generation:** PDFKit / Puppeteer
-- **QR Codes:** qrcode
+### Main Categories:
 
-### Database & Cache
-- **Primary DB:** PostgreSQL 15
-- **Cache:** Redis 7
-- **File Storage:** AWS S3 / Cloudflare R2
+- **Auth**: `/api/auth/*` (register, login, logout)
+- **Events**: `/api/events/*` (list, create, update, delete)
+- **Registrations**: `/api/registrations/*` (register, list, manage)
+- **Tickets**: `/api/tickets/*` (get, validate)
+- **Users**: `/api/users/*` (profile, settings)
+- **Categories**: `/api/categories/*` (list categories)
+- **Payments**: `/api/payments/*` (payment processing)
 
-### DevOps
-- **Frontend Hosting:** Vercel
-- **Backend Hosting:** Railway / Render
-- **CI/CD:** GitHub Actions
-- **Monitoring:** Sentry
-- **Analytics:** Mixpanel / PostHog
+## Troubleshooting
 
-## 🚀 Getting Started
+### Port Already in Use
 
-### Prerequisites
+If port 5000 or 3000 is already in use:
 
+**Backend**:
 ```bash
-node >= 18.0.0
-npm >= 9.0.0
-postgresql >= 15
-redis >= 7
+# Change PORT in backend/.env to a different port (e.g., 5001)
+PORT=5001
 ```
 
-### Installation
-
-1. **Clone the repository**
+**Frontend**:
 ```bash
-git clone https://github.com/yourusername/event-registration-platform.git
-cd event-registration-platform
+# Change port when starting
+PORT=3001 npm start
 ```
 
-2. **Install dependencies**
-```bash
-# Install frontend dependencies
-cd frontend
-npm install
+### Database Connection Error
 
-# Install backend dependencies
-cd ../backend
+```
+Error: connect ECONNREFUSED 127.0.0.1:5432
+```
+
+**Solution**: Ensure PostgreSQL is running:
+```bash
+# macOS
+brew services start postgresql
+
+# Linux
+sudo service postgresql start
+
+# Windows
+# Start from Services or: net start PostgreSQL-x64-XX
+```
+
+### npm Install Fails
+
+Clear cache and reinstall:
+```bash
+npm cache clean --force
+rm -rf node_modules package-lock.json
 npm install
 ```
 
-3. **Environment Setup**
+### CORS Errors
 
-Create `.env` files in both frontend and backend directories:
+Ensure the frontend API URL matches the backend server address in `Frontend/src/api.js`
 
-**Backend `.env`:**
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/eventplatform"
-REDIS_URL="redis://localhost:6379"
-JWT_SECRET="your-secret-key"
-CLERK_SECRET_KEY="your-clerk-secret"
-STRIPE_SECRET_KEY="your-stripe-secret"
-STRIPE_WEBHOOK_SECRET="your-webhook-secret"
-SENDGRID_API_KEY="your-sendgrid-key"
-AWS_ACCESS_KEY_ID="your-aws-key"
-AWS_SECRET_ACCESS_KEY="your-aws-secret"
-FRONTEND_URL="http://localhost:5173"
-PORT=5000
+### Token Expired
+
+Clear localStorage and log in again:
+```javascript
+localStorage.clear();
 ```
 
-**Frontend `.env`:**
-```env
-VITE_API_URL=http://localhost:5000
-VITE_CLERK_PUBLISHABLE_KEY=your-clerk-key
-VITE_STRIPE_PUBLISHABLE_KEY=your-stripe-key
+## Development Guidelines
+
+### Code Style
+
+- Use ES6+ features
+- Follow async/await for promises
+- Use meaningful variable names
+- Add comments for complex logic
+
+### Commit Messages
+
+Format: `type: description`
+
+Examples:
+- `feat: add download ticket feature`
+- `fix: resolve login validation error`
+- `docs: update API documentation`
+- `style: format SignInPage CSS`
+
+### Branch Strategy
+
+- `main` - Production-ready code
+- `Dev` - Development branch
+- `feature/*` - Feature branches
+- `bugfix/*` - Bug fix branches
+
+## Deployment
+
+### Build Frontend for Production
+
+```bash
+cd Frontend
+npm run build
 ```
 
-4. **Database Setup**
+Creates optimized production build in `Frontend/build/`
+
+### Deploy Backend
+
+1. Set up environment variables on production server
+2. Install dependencies: `npm install --production`
+3. Run migrations: `npx prisma migrate deploy`
+4. Start server: `npm start` (or use PM2/systemd)
+
+### Using PM2 for Backend
+
+```bash
+npm install -g pm2
+
+# Start with PM2
+pm2 start backend/src/server.js --name "event-api"
+
+# View logs
+pm2 logs event-api
+
+# Stop/restart
+pm2 stop event-api
+pm2 restart event-api
+```
+
+## Testing
+
+### Run Backend Tests
+
 ```bash
 cd backend
-npx prisma migrate dev
-npx prisma db seed
+npm test
 ```
 
-5. **Run the application**
+### Run Frontend Tests
+
+```bash
+cd Frontend
+npm test
+```
+
+## Contributing
+
+1. Create a new branch: `git checkout -b feature/your-feature`
+2. Make your changes
+3. Commit: `git commit -m "feat: describe your feature"`
+4. Push: `git push origin feature/your-feature`
+5. Open a Pull Request to the `Dev` branch
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For issues and questions:
+
+1. Check existing issues in the repository
+2. Create a new issue with detailed description
+3. Contact the development team
+
+## Quick Reference
+
+### Start Everything
 
 ```bash
 # Terminal 1 - Backend
-cd backend
-npm run dev
+cd backend && npm start
 
 # Terminal 2 - Frontend
-cd frontend
-npm run dev
-
-# Terminal 3 - Redis (if not running as service)
-redis-server
+cd Frontend && npm start
 ```
 
-Visit `http://localhost:5173` to see the app!
+**Frontend**: http://localhost:3000  
+**Backend API**: http://localhost:5000  
+**Prisma Studio**: http://localhost:5555 (run `npx prisma studio`)
 
-## 📡 API Documentation
-
-### Authentication Endpoints
-
-```
-POST   /api/auth/register       - Register new user
-POST   /api/auth/login          - Login user
-POST   /api/auth/logout         - Logout user
-GET    /api/auth/me             - Get current user
-PUT    /api/auth/profile        - Update profile
-```
-
-### Event Endpoints
-
-```
-GET    /api/events              - List all events
-GET    /api/events/:id          - Get event details
-POST   /api/events              - Create event (organizer)
-PUT    /api/events/:id          - Update event (organizer)
-DELETE /api/events/:id          - Delete event (organizer)
-GET    /api/events/search       - Search events
-GET    /api/events/featured     - Get featured events
-```
-
-### Ticket Endpoints
-
-```
-GET    /api/tickets/event/:eventId  - Get tickets for event
-POST   /api/tickets                 - Create ticket type (organizer)
-PUT    /api/tickets/:id             - Update ticket (organizer)
-DELETE /api/tickets/:id             - Delete ticket (organizer)
-```
-
-### Registration Endpoints
-
-```
-POST   /api/registrations           - Register for event
-GET    /api/registrations/me        - Get my registrations
-GET    /api/registrations/:id       - Get registration details
-DELETE /api/registrations/:id       - Cancel registration
-GET    /api/registrations/:id/ticket - Download ticket PDF
-POST   /api/registrations/:id/checkin - Check-in attendee
-```
-
-### Payment Endpoints
-
-```
-POST   /api/payments/checkout       - Create Stripe checkout session
-POST   /api/payments/webhook        - Stripe webhook handler
-GET    /api/payments/:id            - Get payment details
-POST   /api/payments/apply-promo    - Apply promo code
-```
-
-### Analytics Endpoints
-
-```
-GET    /api/analytics/event/:id     - Event analytics (organizer)
-GET    /api/analytics/overview      - Platform overview (admin)
-GET    /api/analytics/revenue       - Revenue reports
-```
-
-## 🎯 3-Week Development Timeline
-
-```mermaid
-gantt
-    title 3-Week Project Timeline
-    dateFormat  YYYY-MM-DD
-    section Week 1
-    Setup & Auth           :w1t1, 2024-01-01, 2d
-    Event Listing & CRUD   :w1t2, after w1t1, 3d
-    section Week 2
-    Ticket System          :w2t1, 2024-01-08, 2d
-    Registration Flow      :w2t2, after w2t1, 1d
-    Payment Integration    :w2t3, after w2t2, 2d
-    section Week 3
-    Ticket Generation      :w3t1, 2024-01-15, 2d
-    Dashboard & Analytics  :w3t2, after w3t1, 2d
-    Testing & Polish       :w3t3, after w3t2, 2d
-    Deployment            :w3t4, after w3t3, 1d
-```
-
-## 🌐 Deployment
-
-### Frontend (Vercel)
+### Common Commands
 
 ```bash
-cd frontend
-vercel --prod
+# Database operations
+npx prisma migrate dev          # Create migration
+npx prisma migrate reset        # Reset database
+npx prisma studio              # Open database GUI
+
+# Testing
+npm test                        # Run tests
+npm test -- --watch            # Watch mode
+
+# Building
+npm run build                   # Production build
+npm start                       # Start server
 ```
-
-### Backend (Railway)
-
-```bash
-cd backend
-railway up
-```
-
-### Database Migration
-
-```bash
-npx prisma migrate deploy
-```
-
-### Environment Variables
-
-Set all environment variables in your hosting platform's dashboard.
-
-## 📊 Project Structure
-
-```
-event-registration-platform/
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── EventCard.jsx
-│   │   │   ├── EventList.jsx
-│   │   │   ├── TicketSelector.jsx
-│   │   │   └── Dashboard.jsx
-│   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   ├── EventDetails.jsx
-│   │   │   ├── Registration.jsx
-│   │   │   ├── MyTickets.jsx
-│   │   │   └── AdminPanel.jsx
-│   │   ├── hooks/
-│   │   ├── utils/
-│   │   └── App.jsx
-│   └── package.json
-├── backend/
-│   ├── src/
-│   │   ├── routes/
-│   │   │   ├── auth.js
-│   │   │   ├── events.js
-│   │   │   ├── tickets.js
-│   │   │   ├── registrations.js
-│   │   │   └── payments.js
-│   │   ├── services/
-│   │   │   ├── emailService.js
-│   │   │   ├── ticketService.js
-│   │   │   └── paymentService.js
-│   │   ├── middleware/
-│   │   ├── utils/
-│   │   └── server.js
-│   ├── prisma/
-│   │   └── schema.prisma
-│   └── package.json
-└── README.md
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Authors
-
-- **Your Name** - *Initial work* - [YourGitHub](https://github.com/yourusername)
-
-## 🙏 Acknowledgments
-
-- Built with modern web technologies
-- Stripe for payment processing
-- Community feedback and contributions
 
 ---
 
-**⭐ Star this repo if you find it helpful!**
+Last Updated: December 11, 2025**⭐ Star this repo if you find it helpful!**
