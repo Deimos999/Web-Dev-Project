@@ -103,8 +103,11 @@ function ProfilePage() {
     setCancelingId(registration.id);
     try {
       await deleteRegistration(registration.id);
-      // Remove the registration from the state
-      setRegistrations(registrations.filter((r) => r.id !== registration.id));
+      
+      // Refetch registrations to sync with backend
+      const updatedRegsRes = await getRegistrations();
+      setRegistrations(updatedRegsRes.data);
+      
       alert("You have successfully unregistered from the event.");
     } catch (err) {
       console.error("Failed to cancel registration:", err);
