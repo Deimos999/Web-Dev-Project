@@ -13,22 +13,21 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// AUTH
+// AUTH API
 export const register = (data) => API.post("/auth/register", data);
 export const login = (data) => API.post("/auth/login", data);
 
-// EVENTS
+// EVENTS API
 export const getEvents = () => API.get("/events");
 export const createEvent = (data) => API.post("/events", data);
 export const deleteEvent = (id) => API.delete(`/events/${id}`);
 
-// REGISTRATIONS
-export const registerUser = (data) => API.post("/registration", data); // Auth required
-export const getMyRegistrations = () => API.get("/registration/user/my-registrations"); // Auth only
-export const getRegistrationsByEventPublic = (eventId) => API.get(`/registration/public/event/${eventId}`); // Guests
-export const deleteRegistration = (id) => API.delete(`/registration/${id}`);
+// REGISTRATIONS API
+export const registerUser = (data) => API.post("/registration", data);
+export const getRegistrations = () => API.get("/registration/user/my-registrations");
+export const deleteRegistration = (id) => API.post(`/registration/${id}/cancel`);
 
-// CATEGORIES
+// CATEGORIES API
 export const getCategories = () => API.get("/categories");
 
 export default API;
