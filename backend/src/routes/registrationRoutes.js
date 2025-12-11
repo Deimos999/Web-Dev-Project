@@ -54,6 +54,16 @@ router.post("/:id/check-in", authenticate, async (req, res, next) => {
   }
 });
 
+router.get("/public/event/:eventId", async (req, res, next) => {
+  try {
+    const registrations = await getRegistrationsByEvent(req.params.eventId);
+    res.json(registrations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
 router.post("/:id/cancel", authenticate, async (req, res, next) => {
   try {
     const registration = await cancelRegistration(req.params.id, req.user.userId);

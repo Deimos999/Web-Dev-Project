@@ -2,138 +2,108 @@ import "./App.css";
 import React, { useState, useEffect } from "react";
 import EventCard from "./components/EventCard";
 import TicketModal from "./components/TicketModal";
-import FirstPage from "./pages/FirstPage";
-import HomePage from "./HomePage";
-import SignInPage from "./pages/SignInPage";
 import Confetti from "react-confetti";
-
+import { useNavigate } from "react-router-dom";
 import {
   getEvents,
   createEvent,
   registerUser,
+  getMyRegistrations,
+  getRegistrationsByEventPublic,
   deleteEvent,
-  getRegistrations,
   deleteRegistration
 } from "./api";
 
 function HomePage() {
-  // States
   const [events, setEvents] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [role, setRole] = useState("user");
   const [showConfetti, setShowConfetti] = useState(false);
-  const currentUser = "John Doe";
+  const navigate = useNavigate();
 
-  // Load events and registrations
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+  const isGuest = !currentUser;
+
+  // AUTH GUARD
   useEffect(() => {
-    loadEvents();
-    loadRegistrations();
+    if (!currentUser) {
+      setRole("guest");
+    } else {
+      setRole(currentUser.role);
+      // Load registrations for logged-in user
+      getMyRegistrations().then(res => setRegistrations(res.data)).catch(() => {});
+    }
   }, []);
 
-  const loadEvents = () => {
+  // Load events for everyone
+  useEffect(() => {
     getEvents()
       .then(res => setEvents(res.data))
       .catch(err => console.log(err));
-  };
+  }, []);
 
-  const loadRegistrations = () => {
-    getRegistrations()
-      .then(res => setRegistrations(res.data))
-      .catch(err => console.log(err));
-  };
-
-  // Event handlers
+  // REGISTER FOR EVENT
   const handleRegister = (event) => {
-    const alreadyRegistered = registrations.find(
-      r => r.eventId === event.id && r.user === currentUser
-    );
-    if (alreadyRegistered) {
-      alert("You are already registered for this event!");
+    if (isGuest) {
+      alert("Guests cannot register. Please sign in.");
       return;
     }
 
-    registerUser({ eventId: event.id, user: currentUser })
+    registerUser({ eventId: event.id })
       .then(res => {
         setRegistrations([...registrations, res.data]);
         setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 5000); 
-        alert("Registered successfully!");
+        setTimeout(() => setShowConfetti(false), 3000);
       })
       .catch(err => console.log(err));
   };
 
-  const handleDeleteEvent = (id) => {
-    deleteEvent(id)
-      .then(() => {
-        setEvents(events.filter(e => e.id !== id));
-        setRegistrations(registrations.filter(r => r.eventId !== id));
-      })
-      .catch(err => console.log(err));
-  };
+  // CREATE EVENT (organizer)
+  const handleCreateEvent = () => {
+    const title = document.getElementById("title").value;
+    const date = document.getElementById("date").value;
+    const time = document.getElementById("time").value;
 
-  const handleDeleteRegistration = (regId) => {
-    deleteRegistration(regId)
-      .then(() => {
-        setRegistrations(registrations.filter(r => r.id !== regId));
-      })
-      .catch(err => console.log(err));
-  };
+    if (!title || !date || !time) return alert("Fill all fields");
 
-  const handleCreateEvent = (newEvent) => {
-    createEvent(newEvent)
+    createEvent({ title, date, time })
       .then(res => setEvents([...events, res.data]))
       .catch(err => console.log(err));
   };
 
-  // Event reminders
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      events.forEach(event => {
-        const eventTime = new Date(event.date + " " + event.time);
-        const diff = eventTime - now;
-        if (diff > 0 && diff <= 3600000) { // 1 hour before event reminder
-          alert(`Reminder: Event "${event.title}" starts in less than 1 hour!`);
-        }
-      });
-    }, 1200000); // check every 20 minute
-    return () => clearInterval(interval);
-  }, [events]);
+  // DELETE EVENT
+  const handleDeleteEvent = (id) => {
+    deleteEvent(id)
+      .then(() => setEvents(events.filter(e => e.id !== id)))
+      .catch(err => console.log(err));
+  };
 
-  // Render
+  // DELETE REGISTRATION
+  const handleDeleteRegistration = (id) => {
+    deleteRegistration(id)
+      .then(() => setRegistrations(registrations.filter(r => r.id !== id)))
+      .catch(err => console.log(err));
+  };
+
   return (
     <div className="HomePage">
       {showConfetti && <Confetti />}
       <h1>🎉 Online Event Registration</h1>
 
-      {/* Role switch */}
       <div className="role-switch">
         <button onClick={() => setRole("user")}>User</button>
         <button onClick={() => setRole("organizer")}>Organizer</button>
         <button onClick={() => setRole("admin")}>Admin</button>
+        <button onClick={() => setRole("guest")}>Guest</button>
       </div>
 
-      {/* Create event form for Organizer */}
       {role === "organizer" && (
         <div className="create-event-form">
           <h3>Create Event</h3>
-          <input type="text" placeholder="Title" id="title" />
+          <input type="text" id="title" placeholder="Title" />
           <input type="date" id="date" />
           <input type="time" id="time" />
-          <button
-            onClick={() => {
-              const title = document.getElementById("title").value;
-              const date = document.getElementById("date").value;
-              const time = document.getElementById("time").value;
-              if (!title || !date || !time) {
-                alert("Please fill all fields!");
-                return;
-              }
-              handleCreateEvent({ title, date, time });
-            }}
-          >
-            Create Event
-          </button>
+          <button onClick={handleCreateEvent}>Create Event</button>
         </div>
       )}
 
@@ -144,10 +114,9 @@ function HomePage() {
             key={event.id}
             event={event}
             role={role}
-            currentUser={currentUser}
             onRegister={() => handleRegister(event)}
             onDelete={() => handleDeleteEvent(event.id)}
-            registrations={registrations.filter(r => r.eventId === event.id)}
+            registrations={isGuest ? [] : registrations.filter(r => r.eventId === event.id)}
             onDeleteRegistration={handleDeleteRegistration}
           />
         ))}
@@ -156,4 +125,4 @@ function HomePage() {
   );
 }
 
-export default Homepage;
+export default HomePage;
