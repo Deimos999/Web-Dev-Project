@@ -14,7 +14,11 @@ export const authenticate = async (req, res, next) => {
   ) {
     try {
       token = req.headers.authorization.split(" ")[1];
+      console.log("Token received:", token.substring(0, 20) + "...");
+      console.log("JWT_SECRET:", process.env.JWT_SECRET ? "SET" : "NOT SET");
+      
       const decoded = verifyToken(token);
+      console.log("Token decoded successfully:", decoded);
       
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
@@ -31,9 +35,11 @@ export const authenticate = async (req, res, next) => {
         return next(new AppError("Not authorized, user not found", 401));
       }
 
-      req.user = user;
+      // Set both id and userId for compatibility
+      req.user = { ...user, userId: user.id };
       next();
     } catch (error) {
+      console.error("Auth Error Details:", error.message);
       if (!(error instanceof AppError)) {
         console.error("Auth Error:", error.message);
         return next(new AppError("Not authorized, token failed", 401));

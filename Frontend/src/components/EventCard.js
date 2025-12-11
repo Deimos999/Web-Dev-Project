@@ -22,7 +22,7 @@ const EventCard = ({
           {registrations.find(r => r.user === currentUser) ? (
             <p>You are already registered ✅</p>
           ) : (
-            <button onClick={onRegister} className="register-btn">
+            <button onClick={() => onRegister(event.tickets?.[0]?.id)} className="register-btn">
               Register
             </button>
           )}
@@ -52,10 +52,10 @@ const EventCard = ({
       {/* Admin view: Show attendees */}
       {role === "admin" && registrations.length > 0 && (
         <div className="attendee-list">
-          <h4>Attendees:</h4>
+          <h4>Attendees ({registrations.length}):</h4>
           <ul>
             {registrations.map(r => (
-              <li key={r.id}>{r.user}</li>
+              <li key={r.id}>{r.user?.name || "Unknown"} - {r.user?.email || "N/A"}</li>
             ))}
           </ul>
         </div>

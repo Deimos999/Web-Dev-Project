@@ -1,14 +1,14 @@
 import "./HomePage.css";
 import React, { useState, useEffect } from "react";
 import EventCard from "./components/EventCard";
-import TicketModal from "./components/TicketModal";
 import Confetti from "react-confetti";
 import { useNavigate } from "react-router-dom";
 
 import {
   getEvents,
-  createEvent,
+  getTicketsByEvent,
   registerUser,
+  createEvent,
   deleteEvent,
   getRegistrations,
   deleteRegistration
@@ -20,9 +20,38 @@ function HomePage() {
   const [role, setRole] = useState("user");
   const [showConfetti, setShowConfetti] = useState(false);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+
+  // Dark mode effect
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add("dark-mode");
+    } else {
+      document.body.classList.remove("dark-mode");
+    }
+  }, [darkMode]);
+
+  // Scroll animation effect
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -100px 0px"
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("scroll-animate");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    return () => observer.disconnect();
+  }, []);
 
   // Auth guard
   useEffect(() => {
@@ -33,12 +62,23 @@ function HomePage() {
     }
   }, []);
 
-  // Load events + registrations
+  // Load events + tickets + registrations
   useEffect(() => {
     async function fetchData() {
       try {
         const eventsRes = await getEvents();
-        setEvents(eventsRes.data);
+        const eventsData = eventsRes.data;
+
+        // fetch tickets for all events
+        const ticketsPromises = eventsData.map(e => getTicketsByEvent(e.id));
+        const ticketsResults = await Promise.all(ticketsPromises);
+        const eventsWithTickets = eventsData.map((event, i) => ({
+          ...event,
+          tickets: ticketsResults[i].data,
+        }));
+
+        setEvents(eventsWithTickets);
+
         const regRes = await getRegistrations();
         setRegistrations(regRes.data);
       } catch (err) {
@@ -50,9 +90,9 @@ function HomePage() {
     fetchData();
   }, []);
 
-  const handleRegister = async (event) => {
+  const handleRegister = async (event, ticketId) => {
     try {
-      const res = await registerUser({ eventId: event.id });
+      const res = await registerUser({ eventId: event.id, ticketId });
       setRegistrations([...registrations, res.data]);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
@@ -101,12 +141,48 @@ function HomePage() {
   return (
     <div className="HomePage">
       {showConfetti && <Confetti />}
-      <h1 className="homepage-title">🎉 Online Event Registration</h1>
+      
+      {/* Top Navigation Bar */}
+      <div className="home-navbar">
+        <div className="navbar-left">
+          <h2 className="navbar-title">🎉 Event Platform</h2>
+        </div>
+        <div className="navbar-right">
+          <button 
+            className="btn-nav-profile" 
+            onClick={() => navigate("/profile")}
+            title="View your profile"
+          >
+            👤 My Profile
+          </button>
+          <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+            {darkMode ? "☀️" : "🌙"}
+          </button>
+        </div>
+      </div>
+
+      <h1 className="homepage-title">Discover Amazing Events</h1>
+      <p className="homepage-subtitle">Find and register for events that interest you</p>
 
       <div className="role-switch">
-        <button onClick={() => setRole("user")}>User</button>
-        <button onClick={() => setRole("organizer")}>Organizer</button>
-        <button onClick={() => setRole("admin")}>Admin</button>
+        <button 
+          className={role === "user" ? "active" : ""} 
+          onClick={() => setRole("user")}
+        >
+          User
+        </button>
+        <button 
+          className={role === "organizer" ? "active" : ""} 
+          onClick={() => setRole("organizer")}
+        >
+          Organizer
+        </button>
+        <button 
+          className={role === "admin" ? "active" : ""} 
+          onClick={() => setRole("admin")}
+        >
+          Admin
+        </button>
       </div>
 
       {role === "organizer" && (
@@ -120,14 +196,13 @@ function HomePage() {
       )}
 
       <h2>Events</h2>
-
       <div className="event-list">
         {events.map(event => (
           <EventCard
             key={event.id}
             event={event}
             role={role}
-            onRegister={() => handleRegister(event)}
+            onRegister={(ticketId) => handleRegister(event, ticketId)}
             onDelete={() => handleDeleteEvent(event.id)}
             registrations={registrations.filter(r => r.eventId === event.id)}
             onDeleteRegistration={handleDeleteRegistration}

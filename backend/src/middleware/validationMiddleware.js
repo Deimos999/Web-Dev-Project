@@ -33,7 +33,7 @@ export const validateCreateEvent = [
 // Registration validations
 export const validateRegisterForEvent = [
   body("eventId").notEmpty(),
-  body("ticketId").notEmpty(),
+  body("ticketId").optional(),
 ];
 
 // Payment validations
