@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ProfilePage.css";
 import RegistrationTicket from "../components/RegistrationTicket";
-import { getRegistrations, getTicketsByEvent, getEvents } from "../api";
+import { getRegistrations, getTicketsByEvent, getEvents, deleteRegistration } from "../api";
 import html2canvas from "html2canvas";
 
 function ProfilePage() {
@@ -12,6 +12,7 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [cancelingId, setCancelingId] = useState(null);
   const navigate = useNavigate();
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -89,6 +90,27 @@ function ProfilePage() {
       console.error("Failed to download ticket:", err);
       alert("Failed to download ticket. Please try again.");
       setDownloadingId(null);
+    }
+  };
+
+  const handleCancelRegistration = async (registration) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to unregister from this event? This action cannot be undone."
+    );
+    
+    if (!confirmed) return;
+
+    setCancelingId(registration.id);
+    try {
+      await deleteRegistration(registration.id);
+      // Remove the registration from the state
+      setRegistrations(registrations.filter((r) => r.id !== registration.id));
+      alert("You have successfully unregistered from the event.");
+    } catch (err) {
+      console.error("Failed to cancel registration:", err);
+      alert("Failed to unregister. Please try again.");
+    } finally {
+      setCancelingId(null);
     }
   };
 
@@ -221,6 +243,17 @@ function ProfilePage() {
                       {downloadingId === registration.id 
                         ? "⏳ Downloading..." 
                         : "📥 Download Ticket"}
+                    </button>
+
+                    {/* Cancel Registration Button */}
+                    <button
+                      className="btn-cancel"
+                      onClick={() => handleCancelRegistration(registration)}
+                      disabled={cancelingId === registration.id}
+                    >
+                      {cancelingId === registration.id 
+                        ? "⏳ Unregistering..." 
+                        : "❌ Unregister"}
                     </button>
                   </div>
                 );

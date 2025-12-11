@@ -399,6 +399,36 @@ body.dark-mode .ticket-preview {
   transform: translateY(0px);
 }
 
+/* Cancel Button */
+.btn-cancel {
+  width: 100%;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+}
+
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-cancel:active:not(:disabled) {
+  transform: translateY(0px);
+}
+
 /* Back to Home */
 .back-to-home {
   text-align: center;
