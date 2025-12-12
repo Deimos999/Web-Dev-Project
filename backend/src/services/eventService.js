@@ -65,10 +65,11 @@ export const getEventById = async (eventId) => {
   return event;
 };
 
-export const updateEvent = async (eventId, eventData, userId) => {
+export const updateEvent = async (eventId, eventData, userId, userRole) => {
   const event = await getEventById(eventId);
 
-  if (event.organizerId !== userId) {
+  // Allow if user is organizer or admin
+  if (event.organizerId !== userId && userRole !== "ADMIN" && userRole !== "admin") {
     throw new AppError("You can only update your own events", 403);
   }
 
@@ -90,10 +91,11 @@ export const updateEvent = async (eventId, eventData, userId) => {
   return updatedEvent;
 };
 
-export const deleteEvent = async (eventId, userId) => {
+export const deleteEvent = async (eventId, userId, userRole) => {
   const event = await getEventById(eventId);
 
-  if (event.organizerId !== userId) {
+  // Allow if user is organizer or admin
+  if (event.organizerId !== userId && userRole !== "ADMIN" && userRole !== "admin") {
     throw new AppError("You can only delete your own events", 403);
   }
 
@@ -104,10 +106,11 @@ export const deleteEvent = async (eventId, userId) => {
   return { message: "Event deleted successfully" };
 };
 
-export const publishEvent = async (eventId, userId) => {
+export const publishEvent = async (eventId, userId, userRole) => {
   const event = await getEventById(eventId);
 
-  if (event.organizerId !== userId) {
+  // Allow if user is organizer or admin
+  if (event.organizerId !== userId && userRole !== "ADMIN" && userRole !== "admin") {
     throw new AppError("Publish your own events bruv", 403);
   }
 

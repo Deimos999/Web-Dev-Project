@@ -53,7 +53,7 @@ router.post("/", authenticate, validateCreateEvent, validateRequest, async (req,
 
 router.patch("/:id", authenticate, async (req, res, next) => {
   try {
-    const event = await updateEvent(req.params.id, req.body, req.user.userId);
+    const event = await updateEvent(req.params.id, req.body, req.user.userId, req.user.role);
     res.json(event);
   } catch (error) {
     next(error);
@@ -62,7 +62,7 @@ router.patch("/:id", authenticate, async (req, res, next) => {
 
 router.delete("/:id", authenticate, async (req, res, next) => {
   try {
-    const result = await deleteEvent(req.params.id, req.user.userId);
+    const result = await deleteEvent(req.params.id, req.user.userId, req.user.role);
     res.json(result);
   } catch (error) {
     next(error);
@@ -71,7 +71,7 @@ router.delete("/:id", authenticate, async (req, res, next) => {
 
 router.post("/:id/publish", authenticate, async (req, res, next) => {
   try {
-    const event = await publishEvent(req.params.id, req.user.userId);
+    const event = await publishEvent(req.params.id, req.user.userId, req.user.role);
     res.json(event);
   } catch (error) {
     next(error);
