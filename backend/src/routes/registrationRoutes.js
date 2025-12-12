@@ -16,8 +16,14 @@ const router = express.Router();
 
 router.post("/", authenticate, validateRegisterForEvent, validateRequest, async (req, res, next) => {
   try {
+    const userId = req.user?.userId || req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+    
     const registration = await registerForEvent(
-      req.user.userId,
+      userId,
       req.body.eventId,
       req.body.ticketId
     );
