@@ -5,6 +5,10 @@ export const authService = {
     const response = await apiClient.post('/auth/login', { email, password });
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
+      // Normalize role to uppercase for consistent checks across the app
+      if (response.data.user && response.data.user.role) {
+        response.data.user.role = response.data.user.role.toUpperCase();
+      }
       localStorage.setItem('user', JSON.stringify(response.data.user));
     }
     return response.data;
@@ -14,6 +18,9 @@ export const authService = {
     const response = await apiClient.post('/auth/register', userData);
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
+      if (response.data.user && response.data.user.role) {
+        response.data.user.role = response.data.user.role.toUpperCase();
+      }
       localStorage.setItem('user', JSON.stringify(response.data.user));
     }
     return response.data;
