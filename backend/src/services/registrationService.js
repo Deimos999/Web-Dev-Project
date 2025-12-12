@@ -52,6 +52,12 @@ export const registerForEvent = async (userId, eventId, ticketId) => {
     include: { user: true, event: true, ticket: true },
   });
 
+  // Increment the sold count for this ticket
+  await prisma.ticket.update({
+    where: { id: ticketId },
+    data: { sold: { increment: 1 } },
+  });
+
   // also generate the qr code for the registration
   const qrData = {
     registrationId: registration.id,
@@ -144,6 +150,12 @@ export const cancelRegistration = async (registrationId, userId) => {
   const cancelled = await prisma.registration.update({
     where: { id: registrationId },
     data: { status: "cancelled" },
+  });
+
+  // Decrement the sold count for this ticket when cancelled
+  await prisma.ticket.update({
+    where: { id: registration.ticketId },
+    data: { sold: { decrement: 1 } },
   });
 
   return cancelled;
