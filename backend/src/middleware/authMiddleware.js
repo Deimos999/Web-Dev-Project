@@ -31,9 +31,11 @@ export const authenticate = async (req, res, next) => {
         return next(new AppError("Not authorized, user not found", 401));
       }
 
-      req.user = user;
+      // Set both id and userId for compatibility
+      req.user = { ...user, userId: user.id };
       next();
     } catch (error) {
+      console.error("Auth Error Details:", error.message);
       if (!(error instanceof AppError)) {
         console.error("Auth Error:", error.message);
         return next(new AppError("Not authorized, token failed", 401));
@@ -52,7 +54,11 @@ export const authorize = (...roles) => {
       return next(new AppError("Not authenticated", 401));
     }
 
-    if (!roles.includes(req.user.role)) {
+    // Check if user role matches any of the required roles (case-insensitive for admin)
+    const userRole = req.user.role?.toLowerCase() || "";
+    const normalizedRoles = roles.map(r => r.toLowerCase());
+    
+    if (!normalizedRoles.includes(userRole)) {
       return next(
         new AppError(
           `Not authorized. Required roles: ${roles.join(", ")}. Your role: ${req.user.role}`,
@@ -67,7 +73,7 @@ export const authorize = (...roles) => {
 
 // Admin middleware (backward compatibility)
 export const admin = (req, res, next) => {
-  if (req.user && req.user.role === "admin") {
+  if (req.user && (req.user.role === "admin" || req.user.role === "ADMIN")) {
     next();
   } else {
     return next(new AppError("Not authorized. Requires Admin privileges.", 403));
