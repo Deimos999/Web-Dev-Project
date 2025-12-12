@@ -11,9 +11,9 @@ function Navbar({ user, onLogout }) {
     navigate('/');
     setMobileMenuOpen(false);
   };
+  // Only users whose email starts with "organizer" can create events
+  const isOrganizer = !!(user && user.email && user.email.toLowerCase().startsWith('organizer'));
 
-  // Check if the current user is the specific organizer
-  const isOrganizer1 = user?.email === 'organizer1@example.com';
 
   return (
     <nav className="bg-slate-900 border-b border-slate-700 sticky top-0 z-50 shadow-lg">
@@ -42,8 +42,8 @@ function Navbar({ user, onLogout }) {
               <Calendar size={18} /> Events
             </Link>
 
-            {/* Create Event Button - only for organizer1 */}
-            {isOrganizer1 && (
+            {/* Create Event Button - only for organizer emails */}
+            {isOrganizer && (
               <Link
                 to="/create-event"
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition"
@@ -133,7 +133,7 @@ function Navbar({ user, onLogout }) {
             </Link>
 
             {/* Mobile Create Event Button */}
-            {isOrganizer1 && (
+            {isOrganizer && (
               <Link
                 to="/create-event"
                 className="block px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
