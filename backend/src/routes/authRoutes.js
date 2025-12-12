@@ -3,12 +3,13 @@ import { PrismaClient } from "@prisma/client";
 import { hashPassword, comparePassword } from "../utils/passwordUtils.js";
 import { generateToken } from "../utils/tokenUtils.js";
 import { AppError } from "../middleware/errorHandler.js";
+import { validateRegister, validateLogin, validateRequest } from "../middleware/validationMiddleware.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // POST /api/auth/register - Handles user creation and JWT return
-router.post("/register", async (req, res, next) => {
+router.post("/register", validateRegister, validateRequest, async (req, res, next) => {
   try {
     const { email, password, name, phone } = req.body;
 
@@ -56,7 +57,7 @@ router.post("/register", async (req, res, next) => {
 });
 
 // POST /api/auth/login - Handles user login and JWT return
-router.post("/login", async (req, res, next) => {
+router.post("/login", validateLogin, validateRequest, async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
