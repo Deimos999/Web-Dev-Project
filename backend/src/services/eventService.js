@@ -99,6 +99,17 @@ export const deleteEvent = async (eventId, userId, userRole) => {
     throw new AppError("You can only delete your own events", 403);
   }
 
+  // Delete all tickets first (cascade delete)
+  await prisma.ticket.deleteMany({
+    where: { eventId: eventId },
+  });
+
+  // Then delete registrations for this event
+  await prisma.registration.deleteMany({
+    where: { eventId: eventId },
+  });
+
+  // Finally delete the event
   await prisma.event.delete({
     where: { id: eventId },
   });
