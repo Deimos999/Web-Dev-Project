@@ -12,7 +12,9 @@ const prisma = new PrismaClient();
 // POST /api/auth/register - Handles user creation and JWT return
 router.post("/register", async (req, res, next) => {
   try {
-    const { email, password, name, phone } = req.body;
+    const { email, password, name, phone, role } = req.body;
+    const allowedRoles = ["USER", "ORGANIZER"];
+    const normalizedRole = allowedRoles.includes(role) ? role : "USER";
 
     // 1. Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -34,7 +36,7 @@ router.post("/register", async (req, res, next) => {
         password: hashedPassword,
         name,
         phone,
-        role: "user", // Default role
+        role: normalizedRole, // Default to USER; allow ORGANIZER
       },
     });
 

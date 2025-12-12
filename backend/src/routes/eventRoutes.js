@@ -59,7 +59,12 @@ router.post(
 
 router.patch("/:id", authenticate, async (req, res, next) => {
   try {
-    const event = await updateEvent(req.params.id, req.body, req.user.userId);
+    const event = await updateEvent(
+      req.params.id,
+      req.body,
+      req.user.userId,
+      req.user.role
+    );
     res.json(event);
   } catch (error) {
     next(error);
@@ -73,19 +78,10 @@ router.delete("/:id", authenticate, async (req, res, next) => {
     const userId = req.user.userId;
     const role = req.user.role;
 
-    // Fetch event
-    const event = await getEventById(eventId);
-    if (!event) return res.status(404).json({ message: "Event not found" });
+    // Delegate permission checks to service
+    const result = await deleteEventService(eventId, userId, role);
 
-    // Check permission: Admin or Organizer
-    if (role !== "ADMIN" && event.organizerId !== userId) {
-      return res.status(403).json({ message: "Not authorized to delete this event" });
-    }
-
-    // Delete event
-    await deleteEventService(eventId);
-
-    res.json({ message: "Event deleted successfully" });
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -94,7 +90,11 @@ router.delete("/:id", authenticate, async (req, res, next) => {
 // Publish event - only Organizer
 router.post("/:id/publish", authenticate, async (req, res, next) => {
   try {
-    const event = await publishEvent(req.params.id, req.user.userId);
+    const event = await publishEvent(
+      req.params.id,
+      req.user.userId,
+      req.user.role
+    );
     res.json(event);
   } catch (error) {
     next(error);

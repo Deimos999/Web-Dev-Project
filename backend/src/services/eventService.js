@@ -4,21 +4,53 @@ import { AppError } from "../middleware/errorHandler.js";
 const prisma = new PrismaClient();
 
 export const createEvent = async (eventData, organizerId) => {
-  return await prisma.event.create({
-    data: {
-      title: eventData.title,
-      description: eventData.description,
-      imageUrl: eventData.imageUrl,
-      startTime: new Date(eventData.startTime),
-      endTime: new Date(eventData.endTime),
-      timezone: eventData.timezone || "UTC",
-      meetingLink: eventData.meetingLink,
-      capacity: eventData.capacity,
-      organizerId,
-      categoryId: eventData.categoryId,
-      status: "draft",
-    },
-    include: { organizer: true, category: true },
+  // Create event and a default ticket in one transaction so new events are always registerable
+  return await prisma.$transaction(async (tx) => {
+    const event = await tx.event.create({
+      data: {
+        title: eventData.title,
+        description: eventData.description,
+        imageUrl: eventData.imageUrl,
+        startTime: new Date(eventData.startTime),
+        endTime: new Date(eventData.endTime),
+        timezone: eventData.timezone || "UTC",
+        meetingLink: eventData.meetingLink,
+        capacity: eventData.capacity,
+        organizerId,
+        categoryId: eventData.categoryId,
+        status: "draft",
+      },
+      include: { organizer: true, category: true },
+    });
+
+    // Determine ticket data (fallback to free default)
+    const userTicket = Array.isArray(eventData.tickets) && eventData.tickets[0];
+    const price = typeof userTicket?.price === "number" ? userTicket.price : 0;
+    const ticketName = userTicket?.name || "General Admission";
+    const ticketDescription = userTicket?.description || "Default ticket";
+    const ticketQuantity =
+      typeof userTicket?.quantity === "number" && userTicket.quantity > 0
+        ? userTicket.quantity
+        : event.capacity;
+
+    // Ensure at least one ticket exists for the event so registration works
+    await tx.ticket.create({
+      data: {
+        eventId: event.id,
+        ticketType: "general",
+        name: ticketName,
+        description: ticketDescription,
+        price,
+        quantity: ticketQuantity,
+        sold: 0,
+      },
+    });
+
+    // Return event with relations
+    return await tx.event.findUnique({
+      where: { id: event.id },
+      include: { organizer: true, category: true, tickets: true },
+    });
   });
 };
 
@@ -97,21 +129,10 @@ export const deleteEvent = async (eventId, userId, userRole) => {
   console.log(`[DELETE EVENT] Starting deletion for eventId: ${eventId}`);
   console.log(`[DELETE EVENT] User: ${userId}, Role: ${userRole}`);
 
-  // Fetch event first
+  // Fetch event first (no heavy includes needed)
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    include: { 
-      tickets: { 
-        include: { 
-          registrations: {
-            include: {
-              payment: true
-            }
-          } 
-        } 
-      },
-      registrations: true
-    },
+    select: { id: true, title: true, organizerId: true },
   });
 
   if (!event) {
@@ -131,42 +152,49 @@ export const deleteEvent = async (eventId, userId, userRole) => {
   console.log(`[DELETE EVENT] Permission granted. Starting deletion process...`);
 
   try {
-    // Use transaction for atomic deletion
+    // Use transaction for atomic deletion and rely on set-based deletes
     await prisma.$transaction(async (tx) => {
-      // Step 1: Delete all payments related to registrations
+      // Step 1: Delete all payments linked to registrations of this event
       console.log(`[DELETE EVENT] Step 1: Deleting payments...`);
-      for (const ticket of event.tickets) {
-        for (const registration of ticket.registrations) {
-          if (registration.paymentId) {
-            await tx.payment.delete({
-              where: { id: registration.paymentId }
-            });
-            console.log(`[DELETE EVENT] Deleted payment: ${registration.paymentId}`);
-          }
-        }
-      }
+      const paymentsDeleted = await tx.payment.deleteMany({
+        where: {
+          registration: {
+            eventId: eventId,
+          },
+        },
+      });
+      console.log(`[DELETE EVENT] Deleted ${paymentsDeleted.count} payments`);
 
-      // Step 2: Delete all registrations
+      // Step 2: Delete all registrations for the event
       console.log(`[DELETE EVENT] Step 2: Deleting registrations...`);
       const deletedRegs = await tx.registration.deleteMany({
-        where: { eventId: eventId }
+        where: { eventId: eventId },
       });
       console.log(`[DELETE EVENT] Deleted ${deletedRegs.count} registrations`);
 
-      // Step 3: Delete all tickets
+      // Step 3: Delete all tickets for the event
       console.log(`[DELETE EVENT] Step 3: Deleting tickets...`);
       const deletedTickets = await tx.ticket.deleteMany({
-        where: { eventId: eventId }
+        where: { eventId: eventId },
       });
       console.log(`[DELETE EVENT] Deleted ${deletedTickets.count} tickets`);
 
       // Step 4: Delete the event
       console.log(`[DELETE EVENT] Step 4: Deleting event...`);
       await tx.event.delete({
-        where: { id: eventId }
+        where: { id: eventId },
       });
       console.log(`[DELETE EVENT] Event deleted successfully`);
     });
+
+    // Double-check the event is gone (defensive for rare constraint issues)
+    const stillExists = await prisma.event.findUnique({ where: { id: eventId } });
+    if (stillExists) {
+      console.error(`[DELETE EVENT] Event still exists after deletion attempt`, {
+        eventId,
+      });
+      throw new AppError("Failed to fully delete event. Please retry.", 500);
+    }
 
     console.log(`[DELETE EVENT] Transaction completed successfully`);
     return { 

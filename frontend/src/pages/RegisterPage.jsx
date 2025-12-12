@@ -12,6 +12,7 @@ function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'USER',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,6 +41,7 @@ function RegisterPage() {
         name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
         password: formData.password,
+        role: formData.role,
       });
       navigate('/login');
     } catch (err) {
@@ -135,6 +137,21 @@ function RegisterPage() {
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-green-500 transition"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-slate-300 text-sm font-semibold mb-2">
+                Account Type
+              </label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-green-500 transition"
+              >
+                <option value="USER">Attendee</option>
+                <option value="ORGANIZER">Organizer</option>
+              </select>
             </div>
 
             <button

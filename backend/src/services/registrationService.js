@@ -9,15 +9,25 @@ export const registerForEvent = async (userId, eventId, ticketId) => {
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new AppError("Event not found", 404);
 
-  // Auto-select first ticket if not provided
-  if (!ticketId) {
-    const tickets = await prisma.ticket.findMany({ where: { eventId } });
-    if (tickets.length === 0) throw new AppError("No tickets available", 400);
-    ticketId = tickets[0].id;
-  }
+  // Fetch all tickets to choose an available one if none provided
+  const tickets = await prisma.ticket.findMany({
+    where: { eventId },
+    orderBy: { price: "asc" },
+  });
+  if (tickets.length === 0) throw new AppError("No tickets available for this event", 400);
 
-  const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
-  if (!ticket) throw new AppError("Ticket not found", 404);
+  let ticket = null;
+
+  if (ticketId) {
+    ticket = tickets.find((t) => t.id === ticketId);
+    if (!ticket) throw new AppError("Ticket not found", 404);
+    if (ticket.sold >= ticket.quantity) throw new AppError("This ticket type is sold out", 400);
+  } else {
+    // Auto-pick the first available ticket
+    ticket = tickets.find((t) => t.sold < t.quantity);
+    if (!ticket) throw new AppError("All tickets are sold out", 400);
+    ticketId = ticket.id;
+  }
 
   const existingRegistration = await prisma.registration.findUnique({
     where: { userId_eventId: { userId, eventId } },

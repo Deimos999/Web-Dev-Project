@@ -21,11 +21,13 @@ const EventsPage = () => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (options = {}) => {
     try {
       setLoading(true);
       const [eventsData, categoriesData] = await Promise.all([
-        eventService.getAllEvents(),
+        eventService.getAllEvents(
+          options.cacheBust ? { _ts: Date.now() } : undefined
+        ),
         categoryService.getAllCategories(),
       ]);
       console.log('[EventsPage] Loaded events:', eventsData.length);
@@ -94,11 +96,9 @@ const EventsPage = () => {
         // Show success message
         alert('✅ Event deleted successfully!');
         
-        // Optionally refresh the entire list to ensure sync
-        setTimeout(() => {
-          console.log('[EventsPage] Refreshing events list...');
-          fetchData();
-        }, 500);
+        // Hard refresh list to ensure consistency and bust any cache
+        console.log('[EventsPage] Refreshing events list (cache-bust)...');
+        await fetchData({ cacheBust: true });
       } else {
         throw new Error('Delete operation did not return success');
       }
