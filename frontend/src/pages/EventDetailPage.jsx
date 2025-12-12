@@ -41,11 +41,18 @@ function EventDetailPage() {
       return;
     }
 
+    if (!event.tickets || event.tickets.length === 0) {
+      setError('No tickets available for this event');
+      return;
+    }
+
     setRegistering(true);
     setError('');
 
     try {
-      await registrationService.registerForEvent(id);
+      // Register for the first available ticket type
+      const ticketId = event.tickets[0].id;
+      await registrationService.registerForEvent(id, ticketId);
       setRegistered(true);
       setAttendeeCount(attendeeCount + 1);
       alert('Successfully registered for this event!');

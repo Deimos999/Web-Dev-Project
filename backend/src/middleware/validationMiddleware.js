@@ -32,8 +32,8 @@ export const validateCreateEvent = [
 
 // Registration validations
 export const validateRegisterForEvent = [
-  body("eventId").notEmpty(),
-  body("ticketId").notEmpty(),
+  body("eventId").notEmpty().withMessage("Event ID is required"),
+  body("ticketId").notEmpty().withMessage("Ticket ID is required"),
 ];
 
 // Payment validations
