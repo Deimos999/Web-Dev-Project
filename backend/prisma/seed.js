@@ -32,30 +32,50 @@ async function main() {
   // Hash password for all users
   const hashedPassword = await bcrypt.hash("password123", 10);
 
-  // Upsert users (idempotent)
+  // FIXED: Use consistent uppercase roles to match backend authorization
   const user = await prisma.user.upsert({
     where: { email: "user@example.com" },
     update: {},
-    create: { email: "user@example.com", password: hashedPassword, name: "Test User", role: "user" },
+    create: { 
+      email: "user@example.com", 
+      password: hashedPassword, 
+      name: "Test User", 
+      role: "USER"  // Changed from "user" to "USER"
+    },
   });
 
   const organizer1 = await prisma.user.upsert({
     where: { email: "organizer1@example.com" },
     update: {},
-    create: { email: "organizer1@example.com", password: hashedPassword, name: "Sarah Johnson", role: "organizer" },
+    create: { 
+      email: "organizer1@example.com", 
+      password: hashedPassword, 
+      name: "Sarah Johnson", 
+      role: "ORGANIZER"  // Changed from "organizer" to "ORGANIZER"
+    },
   });
 
   const organizer2 = await prisma.user.upsert({
     where: { email: "organizer2@example.com" },
     update: {},
-    create: { email: "organizer2@example.com", password: hashedPassword, name: "Mike Chen", role: "organizer" },
+    create: { 
+      email: "organizer2@example.com", 
+      password: hashedPassword, 
+      name: "Mike Chen", 
+      role: "ORGANIZER"  // Changed from "organizer" to "ORGANIZER"
+    },
   });
 
-  // Admin user who can modify events
+  // Admin user who can modify and monitor ALL events
   const admin = await prisma.user.upsert({
     where: { email: "admin@example.com" },
     update: {},
-    create: { email: "admin@example.com", password: hashedPassword, name: "Admin User", role: "admin" },
+    create: { 
+      email: "admin@example.com", 
+      password: hashedPassword, 
+      name: "Admin User", 
+      role: "ADMIN"  // Changed from "admin" to "ADMIN"
+    },
   });
 
   // Define events
@@ -186,10 +206,10 @@ async function main() {
 
   console.log("✅ Seeding complete!");
   console.log("\n📋 Test Accounts:");
-  console.log("   User: user@example.com / password123");
-  console.log("   Organizer 1: organizer1@example.com / password123");
-  console.log("   Organizer 2: organizer2@example.com / password123");
-  console.log("   Admin: admin@example.com / password123");
+  console.log("   User: user@example.com / password123 (Role: USER)");
+  console.log("   Organizer 1: organizer1@example.com / password123 (Role: ORGANIZER)");
+  console.log("   Organizer 2: organizer2@example.com / password123 (Role: ORGANIZER)");
+  console.log("   Admin: admin@example.com / password123 (Role: ADMIN)");
   console.log("\n📅 Events created: " + events.length);
   console.log("🎫 Total tickets created: " + events.length * 3);
 }

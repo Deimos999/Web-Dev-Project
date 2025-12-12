@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, MapPin, DollarSign, Search } from 'lucide-react';
+import { Calendar, MapPin, DollarSign, Search, Users, CheckCircle } from 'lucide-react';
 import { eventService } from '../services/eventService';
 import { categoryService } from '../services/categoryService';
 import ErrorAlert from '../components/ErrorAlert';
@@ -15,6 +15,7 @@ const EventsPage = () => {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -27,9 +28,11 @@ const EventsPage = () => {
         eventService.getAllEvents(),
         categoryService.getAllCategories(),
       ]);
+      console.log('[EventsPage] Loaded events:', eventsData.length);
       setEvents(eventsData);
       setCategories(categoriesData);
     } catch (err) {
+      console.error('[EventsPage] Error loading data:', err);
       setError(err.message || 'Failed to load events');
     } finally {
       setLoading(false);
@@ -64,24 +67,68 @@ const EventsPage = () => {
     }
   };
 
-  const handleDelete = async (e, eventId) => {
+  const handleDelete = async (e, eventId, eventTitle) => {
     e.preventDefault();
-    if (!window.confirm('Are you sure you want to delete this event?')) return;
+    e.stopPropagation();
+    
+    if (!window.confirm(`Are you sure you want to delete "${eventTitle}"?\n\nThis will permanently delete:\n- The event\n- All tickets\n- All registrations\n\nThis action cannot be undone.`)) {
+      return;
+    }
+
+    console.log(`[EventsPage] Starting delete for event: ${eventId}`);
+    setDeletingId(eventId);
+    setError(''); // Clear any previous errors
 
     try {
-      await eventService.deleteEvent(eventId);
-      setEvents((prev) => prev.filter((event) => event.id !== eventId));
-      alert('Event deleted successfully');
+      const response = await eventService.deleteEvent(eventId);
+      console.log('[EventsPage] Delete response:', response);
+      
+      if (response.success || response.message) {
+        // Remove the event from state immediately
+        setEvents((prevEvents) => {
+          const newEvents = prevEvents.filter((event) => event.id !== eventId);
+          console.log(`[EventsPage] Updated events list. Remaining: ${newEvents.length}`);
+          return newEvents;
+        });
+        
+        // Show success message
+        alert('✅ Event deleted successfully!');
+        
+        // Optionally refresh the entire list to ensure sync
+        setTimeout(() => {
+          console.log('[EventsPage] Refreshing events list...');
+          fetchData();
+        }, 500);
+      } else {
+        throw new Error('Delete operation did not return success');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to delete event');
+      console.error('[EventsPage] Delete error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to delete event';
+      setError(errorMessage);
+      alert(`❌ Failed to delete event: ${errorMessage}`);
+    } finally {
+      setDeletingId(null);
     }
+  };
+
+  const canManageEvent = (event) => {
+    // Admin can manage all events, Organizer can manage their own
+    return user?.role === 'ADMIN' || user?.id === event.organizerId;
   };
 
   if (loading && !events.length) return <LoadingSpinner />;
 
   return (
     <div className="space-y-8">
-      <h1 className="text-4xl font-bold text-white">Events</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-4xl font-bold text-white">Events</h1>
+        {user?.role === 'ADMIN' && (
+          <div className="text-sm text-slate-400 bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
+            <span className="text-blue-400 font-semibold">Admin Mode:</span> You can manage all events
+          </div>
+        )}
+      </div>
 
       <ErrorAlert message={error} onClose={() => setError('')} />
 
@@ -140,16 +187,35 @@ const EventsPage = () => {
           {events.map((event) => (
             <div
               key={event.id}
-              className="bg-slate-800 rounded-lg shadow-lg border border-slate-700 overflow-hidden flex flex-col"
+              className={`bg-slate-800 rounded-lg shadow-lg border border-slate-700 overflow-hidden flex flex-col ${
+                deletingId === event.id ? 'opacity-50 pointer-events-none' : ''
+              }`}
             >
               <div
                 className="h-40 bg-cover bg-center relative"
                 style={{ backgroundImage: `url(${event.imageUrl || ''})` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/50 to-purple-600/50"></div>
+                {user?.role === 'ADMIN' && (
+                  <div className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded">
+                    ADMIN
+                  </div>
+                )}
+                {deletingId === event.id && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <div className="text-white font-semibold">Deleting...</div>
+                  </div>
+                )}
               </div>
               <div className="p-6 flex-grow flex flex-col">
-                <h3 className="text-xl font-bold text-white mb-2">{event.title}</h3>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-xl font-bold text-white flex-1">{event.title}</h3>
+                  <span className={`text-xs px-2 py-1 rounded ${
+                    event.status === 'published' ? 'bg-green-600' : 'bg-yellow-600'
+                  }`}>
+                    {event.status}
+                  </span>
+                </div>
                 <p className="text-slate-400 text-sm mb-4 flex-grow">
                   {event.description?.substring(0, 100)}...
                 </p>
@@ -169,6 +235,18 @@ const EventsPage = () => {
                       ? Math.min(...event.tickets.map((t) => t.price))
                       : 0}
                   </p>
+                  {user?.role === 'ADMIN' && (
+                    <>
+                      <p className="flex items-center gap-2">
+                        <Users size={16} className="text-green-400" />
+                        {event.registrations?.length || 0} / {event.capacity} registered
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <CheckCircle size={16} className="text-green-400" />
+                        {event.registrations?.filter(r => r.checkedIn).length || 0} checked in
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="px-6 pb-6 pt-2 border-t border-slate-700 flex flex-col gap-2">
@@ -179,13 +257,22 @@ const EventsPage = () => {
                   View Details
                 </Link>
 
-                {(user?.role === 'ADMIN' || user?.id === event.organizerId) && (
-                  <button
-                    onClick={(e) => handleDelete(e, event.id)}
-                    className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition"
-                  >
-                    Delete
-                  </button>
+                {canManageEvent(event) && (
+                  <>
+                    <Link
+                      to={`/events/${event.id}/edit`}
+                      className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-center transition"
+                    >
+                      Edit Event
+                    </Link>
+                    <button
+                      onClick={(e) => handleDelete(e, event.id, event.title)}
+                      disabled={deletingId === event.id}
+                      className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {deletingId === event.id ? 'Deleting...' : 'Delete Event'}
+                    </button>
+                  </>
                 )}
               </div>
             </div>
