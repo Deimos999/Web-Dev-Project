@@ -58,7 +58,7 @@ export const registerForEvent = async (userId, eventId, ticketId) => {
     ticketCode: registration.ticketCode,
     eventTitle: event.title,
   };
-  const qrCodeUrl = await generateQRCode(qrData);
+  const qrCodeUrl = await generateQRcode(qrData);
 
   // Update registration with QR code
   const updatedRegistration = await prisma.registration.update({
@@ -72,12 +72,10 @@ export const registerForEvent = async (userId, eventId, ticketId) => {
     registration.user.email,
     event.title,
     registration.ticketCode
-  );
+  );*/
 
   return updatedRegistration;
 };
-*/
-}
 export const getRegistrationsByUser = async (userId) => {
   const registrations = await prisma.registration.findMany({
     where: { userId },
