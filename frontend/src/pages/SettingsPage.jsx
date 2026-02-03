@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, LogOut, Wallet, ArrowUpRight } from 'lucide-react';
+import { User, Lock, LogOut, Wallet, ArrowUpRight, Clock } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useAuth } from '../hooks/useAuth';
 import ErrorAlert from '../components/ErrorAlert';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { walletService } from '../services/walletService';
+import { registrationService } from '../services/registrationService';
 
 function SettingsPage() {
   const navigate = useNavigate();
@@ -30,6 +31,8 @@ function SettingsPage() {
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletData, setWalletData] = useState(null);
   const [topUpAmount, setTopUpAmount] = useState('');
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [registrations, setRegistrations] = useState([]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -57,6 +60,30 @@ function SettingsPage() {
     };
 
     loadWallet();
+  }, [activeTab]);
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (activeTab !== 'history') return;
+      setHistoryLoading(true);
+      setError('');
+      try {
+        const data = await registrationService.getUserRegistrations();
+        setRegistrations(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to load registration history', err);
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            'Failed to load registration history'
+        );
+        setRegistrations([]);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+
+    loadHistory();
   }, [activeTab]);
 
   const handleProfileSubmit = async (e) => {
@@ -194,6 +221,19 @@ function SettingsPage() {
           <div className="flex items-center gap-2">
             <Wallet size={18} />
             Wallet
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`px-6 py-3 font-semibold border-b-2 transition ${
+            activeTab === 'history'
+              ? 'border-blue-500 text-blue-400'
+              : 'border-transparent text-slate-400 hover:text-slate-300'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Clock size={18} />
+            History
           </div>
         </button>
       </div>
@@ -408,6 +448,67 @@ function SettingsPage() {
                 )}
               </div>
             </>
+          )}
+        </div>
+      )}
+
+      {/* History Tab */}
+      {activeTab === 'history' && (
+        <div className="bg-slate-800 rounded-lg p-8 border border-slate-700 max-w-4xl space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-1">Activity History</h2>
+              <p className="text-slate-400 text-sm">
+                Overview of your event registrations. Wallet payment activity is available in
+                the Wallet tab.
+              </p>
+            </div>
+          </div>
+
+          {historyLoading ? (
+            <LoadingSpinner />
+          ) : registrations.length ? (
+            <div className="space-y-3">
+              {registrations.map((reg) => (
+                <div
+                  key={reg.id}
+                  className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-4 py-3 bg-slate-700/70 rounded-lg border border-slate-600 text-sm"
+                >
+                  <div>
+                    <p className="text-white font-semibold">
+                      {reg.event?.title || 'Event'}
+                    </p>
+                    <p className="text-slate-400 text-xs">
+                      Registered on{' '}
+                      {reg.registeredAt
+                        ? new Date(reg.registeredAt).toLocaleString()
+                        : 'N/A'}
+                      {' • '}
+                      Ticket:{' '}
+                      {reg.ticket?.name || 'Standard'} (
+                      ${reg.ticket?.price != null ? reg.ticket.price : 0})
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                        reg.status === 'confirmed'
+                          ? 'bg-green-900 text-green-200'
+                          : reg.status === 'pending'
+                          ? 'bg-yellow-900 text-yellow-200'
+                          : 'bg-slate-800 text-slate-200'
+                      }`}
+                    >
+                      {reg.status || 'unknown'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-slate-400 text-sm">
+              No registrations yet. Browse events and register to see your history here.
+            </p>
           )}
         </div>
       )}
