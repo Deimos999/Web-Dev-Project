@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, DollarSign, Users, ArrowLeft } from 'lucide-react';
+import { Calendar, MapPin, DollarSign, Users, ArrowLeft, Share2, Link2 } from 'lucide-react';
 import { eventService } from '../services/eventService';
 import { registrationService } from '../services/registrationService';
 import { useAuth } from '../hooks/useAuth';
@@ -17,6 +17,11 @@ function EventDetailPage() {
   const [error, setError] = useState('');
   const [registered, setRegistered] = useState(false);
   const [attendeeCount, setAttendeeCount] = useState(0);
+
+  const minTicketPrice = useMemo(() => {
+    if (!event?.tickets || event.tickets.length === 0) return 0;
+    return Math.min(...event.tickets.map((t) => parseFloat(t.price)));
+  }, [event]);
 
   useEffect(() => {
     fetchEventDetails();
@@ -47,13 +52,54 @@ function EventDetailPage() {
     try {
       await registrationService.registerForEvent(id);
       setRegistered(true);
-      setAttendeeCount(attendeeCount + 1);
+      setAttendeeCount((prev) => prev + 1);
       alert('Successfully registered for this event!');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          'Registration failed. Please check your wallet balance if this is a paid event.'
+      );
     } finally {
       setRegistering(false);
     }
+  };
+
+  const handleShare = (platform) => {
+    if (!event) return;
+    const url = window.location.href;
+    const text = `Check out this event: ${event.title}`;
+    let shareUrl = '';
+
+    switch (platform) {
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(text)}`;
+        break;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+          url
+        )}`;
+        break;
+      case 'copy':
+        navigator.clipboard
+          .writeText(url)
+          .then(() => {
+            alert('Link copied to clipboard!');
+          })
+          .catch(() => {
+            setError('Failed to copy link. Please copy it manually from the address bar.');
+          });
+        return;
+      default:
+        return;
+    }
+
+    window.open(shareUrl, '_blank', 'noopener,noreferrer');
   };
 
   if (loading) return <LoadingSpinner />;
@@ -90,7 +136,12 @@ function EventDetailPage() {
           {/* Event Header Image */}
           <div 
             className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg h-96 flex items-center justify-center bg-cover bg-center relative"
-            style={{ backgroundImage: `url(${event.imageUrl})` }}
+            style={{
+              backgroundImage: `url(${
+                event.imageUrl ||
+                'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80'
+              })`,
+            }}
           >
             <div className="absolute inset-0 bg-black/40 rounded-lg"></div>
             <div className="text-center text-white relative z-10">
@@ -124,7 +175,7 @@ function EventDetailPage() {
               <p className="flex items-start gap-3">
                 <DollarSign className="text-blue-400 mt-1 flex-shrink-0" size={20} />
                 <span>
-                  <strong>Price:</strong> ${event.tickets?.length > 0 ? Math.min(...event.tickets.map(t => parseFloat(t.price))) : 0}
+                  <strong>Price:</strong> ${minTicketPrice}
                 </span>
               </p>
             </div>
@@ -152,7 +203,7 @@ function EventDetailPage() {
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 sticky top-24">
             <div className="mb-6">
               <p className="text-slate-400 text-sm mb-2">Price per ticket</p>
-              <p className="text-4xl font-bold text-white">${event.tickets?.length > 0 ? Math.min(...event.tickets.map(t => parseFloat(t.price))) : 0}</p>
+              <p className="text-4xl font-bold text-white">${minTicketPrice}</p>
             </div>
 
             {registered ? (
@@ -165,7 +216,7 @@ function EventDetailPage() {
                 disabled={registering}
                 className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white rounded-lg font-semibold transition mb-4"
               >
-                {registering ? 'Registering...' : 'Register Now'}
+                {registering ? 'Processing...' : 'Register & Pay'}
               </button>
             )}
 
@@ -173,6 +224,41 @@ function EventDetailPage() {
               <p>✓ Digital ticket via email</p>
               <p>✓ Instant confirmation</p>
               <p>✓ No hidden fees</p>
+            </div>
+
+            {/* Share section */}
+            <div className="mt-6 pt-6 border-t border-slate-700">
+              <p className="text-slate-400 text-sm mb-3 flex items-center gap-2">
+                <Share2 size={16} className="text-blue-400" />
+                Share this event
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleShare('twitter')}
+                  className="px-3 py-1 text-xs bg-sky-600 hover:bg-sky-700 text-white rounded-full font-semibold transition"
+                >
+                  Twitter / X
+                </button>
+                <button
+                  onClick={() => handleShare('facebook')}
+                  className="px-3 py-1 text-xs bg-blue-700 hover:bg-blue-800 text-white rounded-full font-semibold transition"
+                >
+                  Facebook
+                </button>
+                <button
+                  onClick={() => handleShare('linkedin')}
+                  className="px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-full font-semibold transition"
+                >
+                  LinkedIn
+                </button>
+                <button
+                  onClick={() => handleShare('copy')}
+                  className="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-full font-semibold transition flex items-center gap-1"
+                >
+                  <Link2 size={14} />
+                  Copy Link
+                </button>
+              </div>
             </div>
           </div>
 

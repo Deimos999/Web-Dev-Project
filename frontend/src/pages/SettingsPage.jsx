@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, LogOut } from 'lucide-react';
+import { User, Lock, LogOut, Wallet, ArrowUpRight } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useAuth } from '../hooks/useAuth';
 import ErrorAlert from '../components/ErrorAlert';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { walletService } from '../services/walletService';
 
 function SettingsPage() {
   const navigate = useNavigate();
@@ -26,6 +27,10 @@ function SettingsPage() {
     confirmPassword: '',
   });
 
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [walletData, setWalletData] = useState(null);
+  const [topUpAmount, setTopUpAmount] = useState('');
+
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setProfileData((prev) => ({ ...prev, [name]: value }));
@@ -35,6 +40,24 @@ function SettingsPage() {
     const { name, value } = e.target;
     setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
+
+  useEffect(() => {
+    const loadWallet = async () => {
+      if (activeTab !== 'wallet') return;
+      setWalletLoading(true);
+      setError('');
+      try {
+        const data = await walletService.getMyWallet();
+        setWalletData(data);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load wallet');
+      } finally {
+        setWalletLoading(false);
+      }
+    };
+
+    loadWallet();
+  }, [activeTab]);
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
@@ -89,6 +112,31 @@ function SettingsPage() {
     }
   };
 
+  const handleTopUpSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    const amountNumber = parseFloat(topUpAmount);
+    if (Number.isNaN(amountNumber) || amountNumber <= 0) {
+      setError('Please enter a valid top-up amount greater than 0');
+      return;
+    }
+
+    setWalletLoading(true);
+    try {
+      const updatedWallet = await walletService.topUp(amountNumber);
+      setWalletData(updatedWallet);
+      setTopUpAmount('');
+      setSuccessMessage('Wallet topped up successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to top up wallet');
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
       logout();
@@ -133,6 +181,19 @@ function SettingsPage() {
           <div className="flex items-center gap-2">
             <Lock size={18} />
             Password
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('wallet')}
+          className={`px-6 py-3 font-semibold border-b-2 transition ${
+            activeTab === 'wallet'
+              ? 'border-blue-500 text-blue-400'
+              : 'border-transparent text-slate-400 hover:text-slate-300'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Wallet size={18} />
+            Wallet
           </div>
         </button>
       </div>
@@ -253,6 +314,101 @@ function SettingsPage() {
               {loading ? 'Changing...' : 'Change Password'}
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Wallet Tab */}
+      {activeTab === 'wallet' && (
+        <div className="bg-slate-800 rounded-lg p-8 border border-slate-700 max-w-2xl space-y-8">
+          {walletLoading && !walletData ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-1">My Wallet</h2>
+                  <p className="text-slate-400 text-sm">
+                    Add funds to your wallet and use them to pay for event registrations instantly.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-slate-400 text-sm mb-1">Current Balance</p>
+                  <p className="text-3xl font-bold text-green-400">
+                    ${walletData?.balance?.toFixed(2) || '0.00'}
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleTopUpSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-slate-300 text-sm font-semibold mb-2">
+                    Top-up Amount (USD)
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      value={topUpAmount}
+                      onChange={(e) => setTopUpAmount(e.target.value)}
+                      className="flex-1 px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition"
+                      placeholder="Enter amount"
+                    />
+                    <button
+                      type="submit"
+                      disabled={walletLoading}
+                      className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white rounded-lg font-semibold transition flex items-center gap-2"
+                    >
+                      <ArrowUpRight size={18} />
+                      {walletLoading ? 'Processing...' : 'Top Up'}
+                    </button>
+                  </div>
+                  <p className="text-slate-500 text-xs mt-2">
+                    Demo mode: funds are added instantly without real payment processing.
+                  </p>
+                </div>
+              </form>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-3">Recent Activity</h3>
+                {walletData?.transactions?.length ? (
+                  <div className="space-y-2">
+                    {walletData.transactions.map((tx) => (
+                      <div
+                        key={tx.id}
+                        className="flex items-center justify-between px-4 py-3 bg-slate-700 rounded-lg text-sm"
+                      >
+                        <div>
+                          <p className="text-slate-200 font-semibold">
+                            {tx.type === 'CREDIT_TOP_UP'
+                              ? 'Wallet Top-up'
+                              : tx.type === 'DEBIT_REGISTRATION'
+                              ? 'Event Registration'
+                              : tx.type}
+                          </p>
+                          <p className="text-slate-400 text-xs">
+                            {tx.reference || 'No reference'} •{' '}
+                            {new Date(tx.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <div
+                          className={`font-semibold ${
+                            tx.type.startsWith('CREDIT') ? 'text-green-400' : 'text-red-400'
+                          }`}
+                        >
+                          {tx.type.startsWith('CREDIT') ? '+' : '-'}${tx.amount.toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-400 text-sm">
+                    No wallet activity yet. Top up your wallet to get started.
+                  </p>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
 

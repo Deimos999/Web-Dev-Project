@@ -21,6 +21,7 @@ model User {
 
   registrations Registration[]
   events        Event[]
+  wallet        Wallet?
 }
 
 model Event {
@@ -93,6 +94,28 @@ model Payment {
   paidAt          DateTime @default(now())
 
   registration Registration? @relation(name: "RegistrationPayment")
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  balance   Float    @default(0.0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User               @relation(fields: [userId], references: [id])
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id        String   @id @default(uuid())
+  walletId  String
+  type      String   // e.g. CREDIT_TOP_UP, DEBIT_REGISTRATION
+  amount    Float
+  reference String?
+  createdAt DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
 }
 
 model Category {

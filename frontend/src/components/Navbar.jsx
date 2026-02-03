@@ -15,6 +15,11 @@ function Navbar({ user, onLogout }) {
   // Any organizer or admin can create events
   const canCreateEvent = user?.role === 'ORGANIZER' || user?.role === 'ADMIN';
 
+  const displayName =
+    (user?.firstName || user?.lastName)
+      ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+      : user?.name || user?.email || '';
+
   return (
     <nav className="bg-slate-900 border-b border-slate-700 sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -72,7 +77,7 @@ function Navbar({ user, onLogout }) {
             <div className="flex items-center gap-3 pl-6 border-l border-slate-700">
               {user ? (
                 <>
-                  <span className="text-slate-300 text-sm">{user.email}</span>
+                  <span className="text-slate-300 text-sm">{displayName}</span>
                   <Link
                     to="/settings"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-700 transition text-slate-300 hover:text-white"

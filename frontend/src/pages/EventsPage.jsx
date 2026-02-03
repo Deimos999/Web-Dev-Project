@@ -193,7 +193,12 @@ const EventsPage = () => {
             >
               <div
                 className="h-40 bg-cover bg-center relative"
-                style={{ backgroundImage: `url(${event.imageUrl || ''})` }}
+                style={{
+                  backgroundImage: `url(${
+                    event.imageUrl ||
+                    'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80'
+                  })`,
+                }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/50 to-purple-600/50"></div>
                 {user?.role === 'ADMIN' && (
