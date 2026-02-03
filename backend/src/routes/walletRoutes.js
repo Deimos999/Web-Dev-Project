@@ -1,5 +1,6 @@
 import express from "express";
 import { authenticate } from "../middleware/authMiddleware.js";
+import { AppError } from "../middleware/errorHandler.js";
 import {
   validateRequest,
   validateWalletTopUp,
@@ -31,6 +32,14 @@ router.post(
   validateRequest,
   async (req, res, next) => {
     try {
+      // Only organizers and admins can top up directly
+      if (!["ORGANIZER", "ADMIN"].includes(req.user.role)) {
+        throw new AppError(
+          "Only organizers and administrators can top up wallet balances",
+          403
+        );
+      }
+
       const { amount } = req.body;
       const wallet = await topUpWallet(req.user.userId, parseFloat(amount));
       res.status(201).json(wallet);
