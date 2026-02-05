@@ -33,6 +33,20 @@ function EventDetailPage() {
       const data = await eventService.getEventById(id);
       setEvent(data);
       setAttendeeCount(data.registrations?.length || 0);
+      
+      // Check if user is already registered
+      if (user) {
+        try {
+          const userRegistrations = await registrationService.getUserRegistrations();
+          const isRegistered = userRegistrations.some(
+            (reg) => reg.eventId === id && reg.status === 'confirmed'
+          );
+          setRegistered(isRegistered);
+        } catch (err) {
+          // Silently fail - not critical
+          console.warn('Could not check registration status:', err);
+        }
+      }
     } catch (err) {
       setError(err.message || 'Failed to load event details');
     } finally {
@@ -210,13 +224,25 @@ function EventDetailPage() {
               <div className="bg-green-900 border border-green-700 rounded-lg p-4 text-green-200 text-center font-semibold">
                 ✓ You're registered for this event
               </div>
+            ) : event && new Date(event.startTime) <= new Date() ? (
+              <div className="bg-slate-700 border border-slate-600 rounded-lg p-4 text-slate-300 text-center font-semibold">
+                Event has already started
+              </div>
+            ) : event && event.status !== 'published' ? (
+              <div className="bg-yellow-900 border border-yellow-700 rounded-lg p-4 text-yellow-200 text-center font-semibold">
+                Event not yet published
+              </div>
+            ) : event && attendeeCount >= event.capacity ? (
+              <div className="bg-red-900 border border-red-700 rounded-lg p-4 text-red-200 text-center font-semibold">
+                Event is full
+              </div>
             ) : (
               <button
                 onClick={handleRegister}
-                disabled={registering}
+                disabled={registering || !user}
                 className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white rounded-lg font-semibold transition mb-4"
               >
-                {registering ? 'Processing...' : 'Register & Pay'}
+                {registering ? 'Processing...' : !user ? 'Login to Register' : 'Register & Pay'}
               </button>
             )}
 
