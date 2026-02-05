@@ -4,6 +4,23 @@ import { AppError } from "../middleware/errorHandler.js";
 const prisma = new PrismaClient();
 
 export const createEvent = async (eventData, organizerId) => {
+  // Validate date range
+  const startTime = new Date(eventData.startTime);
+  const endTime = new Date(eventData.endTime);
+  
+  if (endTime <= startTime) {
+    throw new AppError("Event end time must be after start time", 400);
+  }
+  
+  if (startTime < new Date()) {
+    throw new AppError("Event start time cannot be in the past", 400);
+  }
+
+  // Validate capacity
+  if (eventData.capacity < 1) {
+    throw new AppError("Event capacity must be at least 1", 400);
+  }
+
   // Create event and a default ticket in one transaction so new events are always registerable
   return await prisma.$transaction(async (tx) => {
     const event = await tx.event.create({
@@ -11,8 +28,8 @@ export const createEvent = async (eventData, organizerId) => {
         title: eventData.title,
         description: eventData.description,
         imageUrl: eventData.imageUrl,
-        startTime: new Date(eventData.startTime),
-        endTime: new Date(eventData.endTime),
+        startTime,
+        endTime,
         timezone: eventData.timezone || "UTC",
         meetingLink: eventData.meetingLink,
         capacity: eventData.capacity,
@@ -108,6 +125,31 @@ export const updateEvent = async (eventId, eventData, userId, userRole) => {
     throw new AppError("You can only update your own events", 403);
   }
 
+  // Validate date range if dates are being updated
+  if (eventData.startTime || eventData.endTime) {
+    const startTime = eventData.startTime ? new Date(eventData.startTime) : event.startTime;
+    const endTime = eventData.endTime ? new Date(eventData.endTime) : event.endTime;
+    
+    if (endTime <= startTime) {
+      throw new AppError("Event end time must be after start time", 400);
+    }
+  }
+
+  // Validate capacity if being updated - cannot reduce below current registrations
+  if (eventData.capacity !== undefined) {
+    const newCapacity = parseInt(eventData.capacity);
+    if (newCapacity < 1) {
+      throw new AppError("Event capacity must be at least 1", 400);
+    }
+    const currentRegistrations = event.registrations?.length || 0;
+    if (newCapacity < currentRegistrations) {
+      throw new AppError(
+        `Cannot reduce capacity below ${currentRegistrations} (current registrations)`,
+        400
+      );
+    }
+  }
+
   // Update basic event fields
   const updatedEvent = await prisma.event.update({
     where: { id: eventId },
@@ -174,10 +216,46 @@ export const deleteEvent = async (eventId, userId, userRole) => {
   console.log(`[DELETE EVENT] Permission granted. Starting deletion process...`);
 
   try {
-    // Use transaction for atomic deletion and rely on set-based deletes
+    // First, fetch all registrations with ticket prices for refunds
+    const registrationsToRefund = await prisma.registration.findMany({
+      where: { eventId },
+      include: { ticket: true, user: true },
+    });
+
+    // Use transaction for atomic deletion and refunds
     await prisma.$transaction(async (tx) => {
-      // Step 1: Delete all payments linked to registrations of this event
-      console.log(`[DELETE EVENT] Step 1: Deleting payments...`);
+      // Step 1: Refund all paid registrations to user wallets
+      console.log(`[DELETE EVENT] Step 1: Processing refunds...`);
+      let refundCount = 0;
+      for (const reg of registrationsToRefund) {
+        const price = reg.ticket?.price || 0;
+        if (price > 0) {
+          const wallet = await tx.wallet.findUnique({
+            where: { userId: reg.userId },
+          });
+          
+          if (wallet) {
+            await tx.wallet.update({
+              where: { id: wallet.id },
+              data: { balance: { increment: price } },
+            });
+            
+            await tx.walletTransaction.create({
+              data: {
+                walletId: wallet.id,
+                type: "CREDIT_REFUND",
+                amount: price,
+                reference: `event_deleted:${eventId}`,
+              },
+            });
+            refundCount++;
+          }
+        }
+      }
+      console.log(`[DELETE EVENT] Refunded ${refundCount} registrations`);
+
+      // Step 2: Delete all payments linked to registrations of this event
+      console.log(`[DELETE EVENT] Step 2: Deleting payments...`);
       const paymentsDeleted = await tx.payment.deleteMany({
         where: {
           registration: {
@@ -187,22 +265,22 @@ export const deleteEvent = async (eventId, userId, userRole) => {
       });
       console.log(`[DELETE EVENT] Deleted ${paymentsDeleted.count} payments`);
 
-      // Step 2: Delete all registrations for the event
-      console.log(`[DELETE EVENT] Step 2: Deleting registrations...`);
+      // Step 3: Delete all registrations for the event
+      console.log(`[DELETE EVENT] Step 3: Deleting registrations...`);
       const deletedRegs = await tx.registration.deleteMany({
         where: { eventId: eventId },
       });
       console.log(`[DELETE EVENT] Deleted ${deletedRegs.count} registrations`);
 
-      // Step 3: Delete all tickets for the event
-      console.log(`[DELETE EVENT] Step 3: Deleting tickets...`);
+      // Step 4: Delete all tickets for the event
+      console.log(`[DELETE EVENT] Step 4: Deleting tickets...`);
       const deletedTickets = await tx.ticket.deleteMany({
         where: { eventId: eventId },
       });
       console.log(`[DELETE EVENT] Deleted ${deletedTickets.count} tickets`);
 
-      // Step 4: Delete the event
-      console.log(`[DELETE EVENT] Step 4: Deleting event...`);
+      // Step 5: Delete the event
+      console.log(`[DELETE EVENT] Step 5: Deleting event...`);
       await tx.event.delete({
         where: { id: eventId },
       });

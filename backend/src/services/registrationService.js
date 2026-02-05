@@ -10,6 +10,24 @@ export const registerForEvent = async (userId, eventId, ticketId) => {
     const event = await tx.event.findUnique({ where: { id: eventId } });
     if (!event) throw new AppError("Event not found", 404);
 
+    // Check if event is published
+    if (event.status !== "published") {
+      throw new AppError("Event is not available for registration", 400);
+    }
+
+    // Check if event has already started
+    if (new Date(event.startTime) <= new Date()) {
+      throw new AppError("Cannot register for an event that has already started", 400);
+    }
+
+    // Check event capacity
+    const currentRegistrations = await tx.registration.count({
+      where: { eventId },
+    });
+    if (currentRegistrations >= event.capacity) {
+      throw new AppError("Event is at full capacity", 400);
+    }
+
     // Fetch all tickets to choose an available one if none provided
     const tickets = await tx.ticket.findMany({
       where: { eventId },
@@ -44,6 +62,11 @@ export const registerForEvent = async (userId, eventId, ticketId) => {
 
     const ticketCode = generateTicketCode();
     const price = ticket.price || 0;
+
+    // Validate price is non-negative
+    if (price < 0) {
+      throw new AppError("Invalid ticket price", 400);
+    }
 
     // If ticket has a price, require sufficient wallet balance and charge immediately
     let wallet = null;
@@ -204,6 +227,14 @@ export const cancelRegistration = async (registrationId, userId) => {
     if (registration.checkedIn) {
       throw new AppError(
         "Cannot cancel registration for event that has started",
+        400
+      );
+    }
+
+    // Cannot cancel if event has already started
+    if (new Date(registration.event.startTime) <= new Date()) {
+      throw new AppError(
+        "Cannot cancel registration for an event that has already started",
         400
       );
     }
