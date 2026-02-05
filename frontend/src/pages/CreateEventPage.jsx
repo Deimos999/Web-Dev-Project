@@ -38,16 +38,37 @@ function CreateEventPage() {
 
     try {
       if (!categoryId) throw new Error('Category is required');
+      
+      const startDate = new Date(startTime);
+      const endDate = new Date(endTime);
+      
+      if (endDate <= startDate) {
+        throw new Error('End time must be after start time');
+      }
+      
+      if (startDate < new Date()) {
+        throw new Error('Start time cannot be in the past');
+      }
+      
+      const capacityNum = Number(capacity);
+      if (capacityNum < 1 || !Number.isInteger(capacityNum)) {
+        throw new Error('Capacity must be at least 1');
+      }
+      
+      const priceNum = Number(price);
+      if (priceNum < 0 || isNaN(priceNum)) {
+        throw new Error('Price must be 0 or greater');
+      }
 
       const eventData = {
         title,
         description,
         imageUrl,
-        startTime: new Date(startTime).toISOString(),
-        endTime: new Date(endTime).toISOString(),
-        capacity: Number(capacity),
+        startTime: startDate.toISOString(),
+        endTime: endDate.toISOString(),
+        capacity: capacityNum,
         categoryId,
-        tickets: [{ price: Number(price) }],
+        tickets: [{ price: priceNum }],
       };
 
       const event = await eventService.createEvent(eventData);
