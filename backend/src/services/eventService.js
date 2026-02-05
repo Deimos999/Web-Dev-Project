@@ -108,7 +108,8 @@ export const updateEvent = async (eventId, eventData, userId, userRole) => {
     throw new AppError("You can only update your own events", 403);
   }
 
-  return await prisma.event.update({
+  // Update basic event fields
+  const updatedEvent = await prisma.event.update({
     where: { id: eventId },
     data: {
       title: eventData.title || event.title,
@@ -119,8 +120,29 @@ export const updateEvent = async (eventId, eventData, userId, userRole) => {
       meetingLink: eventData.meetingLink || event.meetingLink,
       capacity: eventData.capacity || event.capacity,
       status: eventData.status || event.status,
+      // Allow changing category from the edit form
+      categoryId: eventData.categoryId || event.categoryId,
     },
-    include: { organizer: true, category: true },
+    include: { organizer: true, category: true, tickets: true },
+  });
+
+  // Optionally update ticket price if provided (simple single-price model)
+  const newTicketPrice =
+    Array.isArray(eventData.tickets) && typeof eventData.tickets[0]?.price === "number"
+      ? eventData.tickets[0].price
+      : null;
+
+  if (newTicketPrice !== null) {
+    await prisma.ticket.updateMany({
+      where: { eventId },
+      data: { price: newTicketPrice },
+    });
+  }
+
+  // Return event with fresh tickets
+  return await prisma.event.findUnique({
+    where: { id: eventId },
+    include: { organizer: true, category: true, tickets: true },
   });
 };
 

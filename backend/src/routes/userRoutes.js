@@ -1,7 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import { AppError } from "../middleware/errorHandler.js"; 
-import { authenticate, admin } from "../middleware/authMiddleware.js"; 
+import { AppError } from "../middleware/errorHandler.js";
+import { authenticate, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -68,6 +68,12 @@ router.get("/", authenticate, admin, async (req, res, next) => {
         role: true,
         createdAt: true,
         updatedAt: true,
+        wallet: {
+          select: {
+            id: true,
+            balance: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -92,7 +98,13 @@ router.get("/:id", authenticate, admin, async (req, res, next) => {
         createdAt: true,
         updatedAt: true,
         events: true, // Include events they are organizing
-        registrations: true // Include events they registered for
+        registrations: true, // Include events they registered for
+        wallet: {
+          select: {
+            id: true,
+            balance: true,
+          },
+        },
       },
     });
 
@@ -127,7 +139,7 @@ router.put("/:id", authenticate, admin, async (req, res, next) => {
         phone: true,
         role: true,
         updatedAt: true,
-      }
+      },
     });
 
     res.json({ message: "User updated successfully (Admin action)", user: updatedUser });
@@ -157,6 +169,51 @@ router.delete("/:id", authenticate, admin, async (req, res, next) => {
   } catch (error) {
     if (error.code === 'P2025') { 
         return next(new AppError("User not found.", 404));
+    }
+    next(error);
+  }
+});
+
+// PUT /api/users/:id/wallet - Set or update a user's wallet balance (Admin only)
+router.put("/:id/wallet", authenticate, admin, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { balance } = req.body;
+
+    const parsedBalance = parseFloat(balance);
+    if (Number.isNaN(parsedBalance) || parsedBalance < 0) {
+      throw new AppError("Balance must be a non-negative number.", 400);
+    }
+
+    // Ensure the user exists first
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new AppError("User not found.", 404);
+    }
+
+    // Upsert wallet record for this user
+    const wallet = await prisma.wallet.upsert({
+      where: { userId: id },
+      update: { balance: parsedBalance },
+      create: {
+        userId: id,
+        balance: parsedBalance,
+      },
+      select: {
+        id: true,
+        userId: true,
+        balance: true,
+        updatedAt: true,
+      },
+    });
+
+    res.json({
+      message: "Wallet balance updated successfully (Admin action)",
+      wallet,
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
+      return next(new AppError("User or wallet not found.", 404));
     }
     next(error);
   }

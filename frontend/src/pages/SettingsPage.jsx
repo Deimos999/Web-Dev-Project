@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, LogOut, Wallet, ArrowUpRight, Clock } from 'lucide-react';
+import { User, Lock, LogOut, Wallet, ArrowUpRight, Clock, Users } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useAuth } from '../hooks/useAuth';
 import ErrorAlert from '../components/ErrorAlert';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { walletService } from '../services/walletService';
 import { registrationService } from '../services/registrationService';
+import { userService } from '../services/userService';
 
 function SettingsPage() {
   const navigate = useNavigate();
@@ -33,6 +34,11 @@ function SettingsPage() {
   const [topUpAmount, setTopUpAmount] = useState('');
   const [historyLoading, setHistoryLoading] = useState(false);
   const [registrations, setRegistrations] = useState([]);
+
+  // Admin-only: manage all users & their balances
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [userBalanceEdits, setUserBalanceEdits] = useState({});
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -85,6 +91,29 @@ function SettingsPage() {
 
     loadHistory();
   }, [activeTab]);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      if (activeTab !== 'users' || user?.role !== 'ADMIN') return;
+      setUsersLoading(true);
+      setError('');
+      try {
+        const data = await userService.getAllUsers();
+        setUsers(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            'Failed to load users list'
+        );
+        setUsers([]);
+      } finally {
+        setUsersLoading(false);
+      }
+    };
+
+    loadUsers();
+  }, [activeTab, user]);
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
@@ -164,6 +193,52 @@ function SettingsPage() {
     }
   };
 
+  const handleUserBalanceChange = (userId, value) => {
+    setUserBalanceEdits((prev) => ({
+      ...prev,
+      [userId]: value,
+    }));
+  };
+
+  const handleUserBalanceSave = async (userId) => {
+    const input = userBalanceEdits[userId];
+    const amountNumber = parseFloat(input);
+
+    if (Number.isNaN(amountNumber) || amountNumber < 0) {
+      setError('Please enter a non-negative number for balance');
+      return;
+    }
+
+    setError('');
+    setUsersLoading(true);
+    try {
+      const result = await userService.updateWalletBalance(userId, amountNumber);
+
+      // Update local users state with new balance
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? {
+                ...u,
+                wallet: {
+                  ...(u.wallet || {}),
+                  balance: result.wallet?.balance ?? amountNumber,
+                },
+              }
+            : u
+        )
+      );
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          'Failed to update wallet balance'
+      );
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
       logout();
@@ -236,6 +311,21 @@ function SettingsPage() {
             History
           </div>
         </button>
+        {user?.role === 'ADMIN' && (
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-6 py-3 font-semibold border-b-2 transition ${
+              activeTab === 'users'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-slate-400 hover:text-slate-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Users size={18} />
+              Users
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Profile Tab */}
@@ -509,6 +599,94 @@ function SettingsPage() {
             <p className="text-slate-400 text-sm">
               No registrations yet. Browse events and register to see your history here.
             </p>
+          )}
+        </div>
+      )}
+
+      {/* Admin Users Tab */}
+      {activeTab === 'users' && user?.role === 'ADMIN' && (
+        <div className="bg-slate-800 rounded-lg p-8 border border-slate-700 max-w-5xl space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-1">All Users</h2>
+              <p className="text-slate-400 text-sm">
+                View every user (including organizers) and adjust their wallet balances.
+              </p>
+            </div>
+          </div>
+
+          {usersLoading && !users.length ? (
+            <LoadingSpinner />
+          ) : users.length ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-700">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-slate-300 font-semibold uppercase text-xs">
+                      Name
+                    </th>
+                    <th className="px-4 py-2 text-left text-slate-300 font-semibold uppercase text-xs">
+                      Email
+                    </th>
+                    <th className="px-4 py-2 text-left text-slate-300 font-semibold uppercase text-xs">
+                      Role
+                    </th>
+                    <th className="px-4 py-2 text-left text-slate-300 font-semibold uppercase text-xs">
+                      Balance
+                    </th>
+                    <th className="px-4 py-2 text-left text-slate-300 font-semibold uppercase text-xs">
+                      Set Balance
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                  {users.map((u) => (
+                    <tr key={u.id} className="hover:bg-slate-750">
+                      <td className="px-4 py-2 text-slate-100">
+                        {u.name || 'Unnamed'}
+                      </td>
+                      <td className="px-4 py-2 text-slate-300">{u.email}</td>
+                      <td className="px-4 py-2">
+                        <span className="inline-flex px-2 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-200">
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-slate-100">
+                        ${u.wallet?.balance != null ? u.wallet.balance.toFixed(2) : '0.00'}
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={
+                              userBalanceEdits[u.id] ??
+                              (u.wallet?.balance != null ? u.wallet.balance : '')
+                            }
+                            onChange={(e) =>
+                              handleUserBalanceChange(u.id, e.target.value)
+                            }
+                            className="w-28 px-2 py-1 bg-slate-700 border border-slate-600 rounded-lg text-white text-xs focus:outline-none focus:border-blue-500"
+                            placeholder="Amount"
+                          />
+                          <button
+                            type="button"
+                            disabled={usersLoading}
+                            onClick={() => handleUserBalanceSave(u.id)}
+                            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white rounded-lg text-xs font-semibold transition"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-slate-400 text-sm">No users found.</p>
           )}
         </div>
       )}

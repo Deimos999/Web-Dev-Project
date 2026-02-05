@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, LogOut, Menu, X, Home, LogIn, UserPlus, Settings, PlusCircle } from 'lucide-react';
+import { Sun, Moon } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
+
 
 function Navbar({ user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
