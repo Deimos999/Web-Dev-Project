@@ -41,3 +41,14 @@ export const validatePayment = [
   body("registrationId").notEmpty(),
   body("amount").isDecimal({ decimal_digits: "1,2" }),
 ];
+
+// Wallet validations
+export const validateWalletTopUp = [
+  body("amount")
+    .isFloat({ gt: 0 })
+    .withMessage("Top-up amount must be greater than zero"),
+];
+
+export const validateWalletPay = [
+  body("registrationId").notEmpty().withMessage("registrationId is required"),
+];

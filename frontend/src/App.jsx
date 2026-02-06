@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage.jsx';
 import EventsPage from './pages/EventsPage.jsx';
 import EventDetailPage from './pages/EventDetailPage.jsx';
 import CreateEventPage from './pages/CreateEventPage.jsx';
+import EditEventPage from './pages/EditEventPage.jsx';
 import RegistrationsPage from './pages/RegistrationsPage.jsx';
 import TicketsPage from './pages/TicketsPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
@@ -50,6 +51,7 @@ function App() {
               <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/" />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/:id" element={<EventDetailPage />} />
+              <Route path="/events/:id/edit" element={<PrivateRoute><EditEventPage /></PrivateRoute>} />
               <Route path="/create-event" element={<PrivateRoute><CreateEventPage /></PrivateRoute>} />
               <Route path="/registrations" element={<PrivateRoute><RegistrationsPage /></PrivateRoute>} />
               <Route path="/tickets" element={<PrivateRoute><TicketsPage /></PrivateRoute>} />

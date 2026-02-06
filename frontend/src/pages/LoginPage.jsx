@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn } from 'lucide-react';
+import { LogIn, Wallet } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useAuth } from '../hooks/useAuth';
 import ErrorAlert from '../components/ErrorAlert';
@@ -34,9 +34,15 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="bg-slate-800 rounded-lg shadow-xl p-8 border border-slate-700">
-          <div className="flex items-center justify-center mb-6">
-            <LogIn className="text-blue-400 mr-2" size={32} />
-            <h2 className="text-3xl font-bold text-white">Login</h2>
+          <div className="flex flex-col items-center justify-center mb-6 space-y-2">
+            <div className="flex items-center gap-2">
+              <LogIn className="text-blue-400" size={32} />
+              <h2 className="text-3xl font-bold text-white">Login</h2>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-700/60 px-3 py-1 rounded-full">
+              <Wallet className="text-green-400" size={18} />
+              <span>Wallet-friendly events • Top up & pay from your account</span>
+            </div>
           </div>
 
           <ErrorAlert message={error} onClose={() => setError('')} />

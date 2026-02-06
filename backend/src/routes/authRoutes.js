@@ -32,7 +32,8 @@ router.post("/register", async (req, res, next) => {
         password: hashedPassword,
         name,
         phone,
-        role: "user", // Default role
+        // All self-registered users are customers
+        role: "USER",
       },
     });
 

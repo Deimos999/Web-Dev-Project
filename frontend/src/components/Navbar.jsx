@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, LogOut, Menu, X, Home, LogIn, UserPlus, Settings, PlusCircle } from 'lucide-react';
+import { Sun, Moon } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
+
 
 function Navbar({ user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -12,8 +15,13 @@ function Navbar({ user, onLogout }) {
     setMobileMenuOpen(false);
   };
 
-  // Check if the current user is the specific organizer
-  const isOrganizer1 = user?.email === 'organizer1@example.com';
+  // Any organizer or admin can create events
+  const canCreateEvent = user?.role === 'ORGANIZER' || user?.role === 'ADMIN';
+
+  const displayName =
+    (user?.firstName || user?.lastName)
+      ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+      : user?.name || user?.email || '';
 
   return (
     <nav className="bg-slate-900 border-b border-slate-700 sticky top-0 z-50 shadow-lg">
@@ -42,8 +50,8 @@ function Navbar({ user, onLogout }) {
               <Calendar size={18} /> Events
             </Link>
 
-            {/* Create Event Button - only for organizer1 */}
-            {isOrganizer1 && (
+            {/* Create Event Button - organizers/admins */}
+            {canCreateEvent && (
               <Link
                 to="/create-event"
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition"
@@ -72,7 +80,7 @@ function Navbar({ user, onLogout }) {
             <div className="flex items-center gap-3 pl-6 border-l border-slate-700">
               {user ? (
                 <>
-                  <span className="text-slate-300 text-sm">{user.email}</span>
+                  <span className="text-slate-300 text-sm">{displayName}</span>
                   <Link
                     to="/settings"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-700 transition text-slate-300 hover:text-white"
@@ -133,7 +141,7 @@ function Navbar({ user, onLogout }) {
             </Link>
 
             {/* Mobile Create Event Button */}
-            {isOrganizer1 && (
+            {canCreateEvent && (
               <Link
                 to="/create-event"
                 className="block px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"

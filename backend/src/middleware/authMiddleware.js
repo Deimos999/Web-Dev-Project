@@ -67,9 +67,9 @@ export const authorize = (...roles) => {
 
 // Admin middleware (backward compatibility)
 export const admin = (req, res, next) => {
-  if (req.user && req.user.role === "admin") {
-    next();
-  } else {
-    return next(new AppError("Not authorized. Requires Admin privileges.", 403));
+  if (req.user && req.user.role && req.user.role.toUpperCase() === "ADMIN") {
+    return next();
   }
+
+  return next(new AppError("Not authorized. Requires Admin privileges.", 403));
 };

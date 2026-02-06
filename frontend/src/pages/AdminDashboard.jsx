@@ -37,10 +37,14 @@ const AdminDashboard = () => {
     fetchDashboardData();
   }, [user]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (options = {}) => {
     try {
       setLoading(true);
-      const eventsData = await eventService.getAllEvents({ limit: 100 });
+      const eventsData = await eventService.getAllEvents({
+        limit: 100,
+        // cache buster to ensure we never see a stale event after delete
+        ...(options.cacheBust ? { _ts: Date.now() } : {}),
+      });
       setEvents(eventsData);
 
       // Calculate stats
@@ -81,7 +85,7 @@ const AdminDashboard = () => {
       await eventService.deleteEvent(eventId);
       setEvents((prev) => prev.filter((event) => event.id !== eventId));
       alert('Event deleted successfully');
-      fetchDashboardData(); // Refresh stats
+      await fetchDashboardData({ cacheBust: true }); // Refresh stats with cache bust
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to delete event');
     }
