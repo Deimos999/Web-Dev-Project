@@ -11,10 +11,6 @@ export const createEvent = async (eventData, organizerId) => {
   if (endTime <= startTime) {
     throw new AppError("Event end time must be after start time", 400);
   }
-  
-  if (startTime < new Date()) {
-    throw new AppError("Event start time cannot be in the past", 400);
-  }
 
   // Validate capacity
   if (eventData.capacity < 1) {
@@ -338,4 +334,112 @@ export const getEventStats = async (eventId) => {
   };
 
   return stats;
+};
+
+// -------- Organizer proposals & admin approval flow --------
+
+export const createEventProposal = async (eventData, organizerId) => {
+  // Basic validation reused from createEvent
+  const startTime = new Date(eventData.startTime);
+  const endTime = new Date(eventData.endTime);
+
+  if (endTime <= startTime) {
+    throw new AppError("Event end time must be after start time", 400);
+  }
+
+  if (eventData.capacity < 1) {
+    throw new AppError("Event capacity must be at least 1", 400);
+  }
+
+  const userTicket = Array.isArray(eventData.tickets) && eventData.tickets[0];
+  const price =
+    typeof userTicket?.price === "number" && userTicket.price >= 0
+      ? userTicket.price
+      : 0;
+
+  return prisma.eventProposal.create({
+    data: {
+      title: eventData.title,
+      description: eventData.description,
+      imageUrl: eventData.imageUrl,
+      startTime,
+      endTime,
+      capacity: eventData.capacity,
+      ticketPrice: price,
+      categoryId: eventData.categoryId,
+      organizerId,
+      status: "PENDING",
+    },
+    include: { organizer: true, category: true },
+  });
+};
+
+export const getEventProposals = async () => {
+  return prisma.eventProposal.findMany({
+    include: {
+      organizer: true,
+      category: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
+export const approveEventProposal = async (proposalId) => {
+  return prisma.$transaction(async (tx) => {
+    const proposal = await tx.eventProposal.findUnique({
+      where: { id: proposalId },
+    });
+
+    if (!proposal) {
+      throw new AppError("Proposal not found", 404);
+    }
+
+    if (proposal.status !== "PENDING") {
+      throw new AppError("Proposal is not pending", 400);
+    }
+
+    // Create a real event using existing logic
+    const event = await createEvent(
+      {
+        title: proposal.title,
+        description: proposal.description,
+        imageUrl: proposal.imageUrl ?? "",
+        startTime: proposal.startTime.toISOString(),
+        endTime: proposal.endTime.toISOString(),
+        capacity: proposal.capacity,
+        categoryId: proposal.categoryId,
+        tickets: [{ price: proposal.ticketPrice }],
+      },
+      proposal.organizerId
+    );
+
+    await tx.eventProposal.update({
+      where: { id: proposalId },
+      data: { status: "APPROVED" },
+    });
+
+    return event;
+  });
+};
+
+export const rejectEventProposal = async (proposalId, reason) => {
+  const proposal = await prisma.eventProposal.findUnique({
+    where: { id: proposalId },
+  });
+
+  if (!proposal) {
+    throw new AppError("Proposal not found", 404);
+  }
+
+  if (proposal.status !== "PENDING") {
+    throw new AppError("Proposal is not pending", 400);
+  }
+
+  return prisma.eventProposal.update({
+    where: { id: proposalId },
+    data: {
+      status: "REJECTED",
+      rejectionReason: reason || null,
+    },
+  });
 };

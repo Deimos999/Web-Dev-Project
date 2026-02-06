@@ -21,12 +21,54 @@ export const eventService = {
     }
   },
 
+  createProposal: async (eventData) => {
+    try {
+      const response = await apiClient.post('/events/proposals', eventData);
+      return response.data;
+    } catch (err) {
+      console.error('Error creating event proposal:', err.response?.data || err);
+      throw err;
+    }
+  },
+
   createEvent: async (eventData) => {
     try {
       const response = await apiClient.post('/events', eventData);
       return response.data;
     } catch (err) {
       console.error('Error creating event:', err.response?.data || err);
+      throw err;
+    }
+  },
+
+  getProposals: async () => {
+    try {
+      const response = await apiClient.get('/events/proposals');
+      return response.data;
+    } catch (err) {
+      console.error('Error fetching event proposals:', err.response?.data || err);
+      throw err;
+    }
+  },
+
+  approveProposal: async (id) => {
+    try {
+      const response = await apiClient.post(`/events/proposals/${id}/approve`);
+      return response.data;
+    } catch (err) {
+      console.error('Error approving event proposal:', err.response?.data || err);
+      throw err;
+    }
+  },
+
+  rejectProposal: async (id, reason) => {
+    try {
+      const response = await apiClient.post(`/events/proposals/${id}/reject`, {
+        reason,
+      });
+      return response.data;
+    } catch (err) {
+      console.error('Error rejecting event proposal:', err.response?.data || err);
       throw err;
     }
   },

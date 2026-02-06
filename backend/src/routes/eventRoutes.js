@@ -3,7 +3,7 @@ import {
   validateCreateEvent,
   validateRequest,
 } from "../middleware/validationMiddleware.js";
-import { authenticate } from "../middleware/authMiddleware.js";
+import { authenticate, authorize } from "../middleware/authMiddleware.js";
 import {
   createEvent,
   getEvents,
@@ -11,6 +11,10 @@ import {
   updateEvent,
   deleteEvent as deleteEventService,
   publishEvent,
+  createEventProposal,
+  getEventProposals,
+  approveEventProposal,
+  rejectEventProposal,
 } from "../services/eventService.js";
 
 const router = express.Router();
@@ -45,12 +49,76 @@ router.get("/:id", async (req, res, next) => {
 router.post(
   "/",
   authenticate,
+  authorize("ADMIN"),
   validateCreateEvent,
   validateRequest,
   async (req, res, next) => {
     try {
       const event = await createEvent(req.body, req.user.userId);
       res.status(201).json(event);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Organizer: submit event proposal for approval
+router.post(
+  "/proposals",
+  authenticate,
+  authorize("ORGANIZER"),
+  validateCreateEvent,
+  validateRequest,
+  async (req, res, next) => {
+    try {
+      const proposal = await createEventProposal(req.body, req.user.userId);
+      res.status(201).json(proposal);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Admin: list all event proposals
+router.get(
+  "/proposals",
+  authenticate,
+  authorize("ADMIN"),
+  async (req, res, next) => {
+    try {
+      const proposals = await getEventProposals();
+      res.json(proposals);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Admin: approve proposal (creates real event)
+router.post(
+  "/proposals/:id/approve",
+  authenticate,
+  authorize("ADMIN"),
+  async (req, res, next) => {
+    try {
+      const event = await approveEventProposal(req.params.id);
+      res.status(201).json(event);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Admin: reject proposal
+router.post(
+  "/proposals/:id/reject",
+  authenticate,
+  authorize("ADMIN"),
+  async (req, res, next) => {
+    try {
+      const { reason } = req.body;
+      const proposal = await rejectEventProposal(req.params.id, reason);
+      res.json(proposal);
     } catch (error) {
       next(error);
     }

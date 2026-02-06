@@ -46,10 +46,6 @@ function CreateEventPage() {
         throw new Error('End time must be after start time');
       }
       
-      if (startDate < new Date()) {
-        throw new Error('Start time cannot be in the past');
-      }
-      
       const capacityNum = Number(capacity);
       if (capacityNum < 1 || !Number.isInteger(capacityNum)) {
         throw new Error('Capacity must be at least 1');
@@ -71,9 +67,10 @@ function CreateEventPage() {
         tickets: [{ price: priceNum }],
       };
 
-      const event = await eventService.createEvent(eventData);
-      alert('Event created successfully!');
-      navigate(`/events/${event.id}`);
+      const proposal = await eventService.createProposal(eventData);
+      alert('Event proposal submitted! Waiting for admin approval.');
+      console.log('Created proposal:', proposal);
+      navigate('/events');
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || err.message || 'Failed to create event');
@@ -86,7 +83,7 @@ function CreateEventPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-slate-800 rounded-lg border border-slate-700">
-      <h1 className="text-3xl font-bold text-white mb-6">Create New Event</h1>
+      <h1 className="text-3xl font-bold text-white mb-6">Submit New Event Proposal</h1>
       <ErrorAlert message={error} onClose={() => setError('')} />
       <form className="space-y-4" onSubmit={handleSubmit}>
         <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full p-2 rounded-lg bg-slate-700 text-white border border-slate-600" required />
