@@ -10,14 +10,19 @@ datasource db {
 model User {
   id            String         @id @default(uuid())
   email         String         @unique
-  password      String 
+  password      String
   name          String
   phone         String?
-  role          String         @default("user")
+  role          String         @default("USER")
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  registrations Registration[]
-  events        Event[]
+
+  registrations  Registration[]
+  events         Event[]
+  wallet         Wallet?
+  eventProposals EventProposal[]
 }
 
 model Event {
@@ -37,24 +42,45 @@ model Event {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  organizer     User           @relation(fields: [organizerId], references: [id])
-  category      Category       @relation(fields: [categoryId], references: [id])
+  organizer     User       @relation(fields: [organizerId], references: [id])
+  category      Category   @relation(fields: [categoryId], references: [id])
   registrations Registration[]
   tickets       Ticket[]
 }
 
+model EventProposal {
+  id             String   @id @default(uuid())
+  title          String
+  description    String
+  imageUrl       String?
+  startTime      DateTime
+  endTime        DateTime
+  capacity       Int
+  ticketPrice    Float    @default(0.0)
+  categoryId     String
+  organizerId    String
+  status         String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  rejectionReason String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organizer User     @relation(fields: [organizerId], references: [id])
+  category  Category @relation(fields: [categoryId], references: [id])
+}
+
 model Ticket {
-  id            String         @id @default(uuid())
-  eventId       String
-  ticketType    String
-  name          String
-  description   String?
-  price         Decimal        @default(0.0)
-  quantity      Int
-  sold          Int            @default(0)
-  saleStart     DateTime?
-  saleEnd       DateTime?
-  event         Event          @relation(fields: [eventId], references: [id])
+  id          String    @id @default(uuid())
+  eventId     String
+  ticketType  String
+  name        String
+  description String?
+  price       Float     @default(0.0)
+  quantity    Int
+  sold        Int       @default(0)
+  saleStart   DateTime?
+  saleEnd     DateTime?
+
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
   registrations Registration[]
 }
 
@@ -72,8 +98,8 @@ model Registration {
   registeredAt DateTime @default(now())
 
   user   User   @relation(fields: [userId], references: [id])
-  event  Event  @relation(fields: [eventId], references: [id])
-  ticket Ticket @relation(fields: [ticketId], references: [id])
+  event  Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   payment Payment? @relation(name: "RegistrationPayment", fields: [paymentId], references: [id])
 
@@ -83,7 +109,7 @@ model Registration {
 model Payment {
   id              String   @id @default(uuid())
   stripePaymentId String   @unique
-  amount          Decimal
+  amount          Float
   currency        String   @default("usd")
   status          String
   paidAt          DateTime @default(now())
@@ -91,18 +117,42 @@ model Payment {
   registration Registration? @relation(name: "RegistrationPayment")
 }
 
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  balance   Float    @default(0.0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User               @relation(fields: [userId], references: [id])
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id        String   @id @default(uuid())
+  walletId  String
+  type      String   // e.g. CREDIT_TOP_UP, DEBIT_REGISTRATION
+  amount    Float
+  reference String?
+  createdAt DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+}
+
 model Category {
   id     String  @id @default(uuid())
   name   String
   slug   String  @unique
   color  String  @default("#6366f1")
-  events Event[]
+
+  events         Event[]
+  eventProposals EventProposal[]
 }
 
 model PromoCode {
   id         String   @id @default(uuid())
   code       String   @unique
-  discount   Decimal
+  discount   Float
   type       String
   maxUses    Int
   usedCount  Int      @default(0)
