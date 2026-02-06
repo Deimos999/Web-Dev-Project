@@ -94,9 +94,14 @@ export const eventService = {
     }
   },
 
-  searchEvents: async (query) => {
+  searchEvents: async (query, extraFilters = {}) => {
     try {
-      const response = await apiClient.get('/events', { params: { search: query } });
+      const response = await apiClient.get('/events', { 
+        params: { 
+          search: query,
+          ...extraFilters,
+        } 
+      });
       return response.data;
     } catch (err) {
       console.error(`Error searching events:`, err.response?.data || err);
@@ -104,9 +109,14 @@ export const eventService = {
     }
   },
 
-  getEventsByCategory: async (categoryId) => {
+  getEventsByCategory: async (categoryId, extraFilters = {}) => {
     try {
-      const response = await apiClient.get('/events', { params: { categoryId } });
+      const response = await apiClient.get('/events', { 
+        params: { 
+          categoryId,
+          ...extraFilters,
+        } 
+      });
       return response.data;
     } catch (err) {
       console.error(`Error fetching events by category:`, err.response?.data || err);

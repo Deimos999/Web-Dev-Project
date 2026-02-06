@@ -31,7 +31,9 @@ export const createEvent = async (eventData, organizerId) => {
         capacity: eventData.capacity,
         organizerId,
         categoryId: eventData.categoryId,
-        status: "draft",
+        // Allow callers (e.g. admin approval flow) to explicitly set status,
+        // but default to "draft" for regular creations.
+        status: eventData.status || "draft",
       },
       include: { organizer: true, category: true },
     });
@@ -398,7 +400,7 @@ export const approveEventProposal = async (proposalId) => {
       throw new AppError("Proposal is not pending", 400);
     }
 
-    // Create a real event using existing logic
+    // Create a real, published event using existing logic
     const event = await createEvent(
       {
         title: proposal.title,
@@ -409,6 +411,7 @@ export const approveEventProposal = async (proposalId) => {
         capacity: proposal.capacity,
         categoryId: proposal.categoryId,
         tickets: [{ price: proposal.ticketPrice }],
+        status: "published",
       },
       proposal.organizerId
     );

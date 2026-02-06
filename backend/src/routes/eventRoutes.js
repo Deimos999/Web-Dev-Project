@@ -36,6 +36,24 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// NOTE: place /proposals routes BEFORE "/:id" so they are not shadowed
+// by the dynamic ID route.
+
+// Admin: list all event proposals
+router.get(
+  "/proposals",
+  authenticate,
+  authorize("ADMIN"),
+  async (req, res, next) => {
+    try {
+      const proposals = await getEventProposals();
+      res.json(proposals);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.get("/:id", async (req, res, next) => {
   try {
     const event = await getEventById(req.params.id);
@@ -73,21 +91,6 @@ router.post(
     try {
       const proposal = await createEventProposal(req.body, req.user.userId);
       res.status(201).json(proposal);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-// Admin: list all event proposals
-router.get(
-  "/proposals",
-  authenticate,
-  authorize("ADMIN"),
-  async (req, res, next) => {
-    try {
-      const proposals = await getEventProposals();
-      res.json(proposals);
     } catch (error) {
       next(error);
     }

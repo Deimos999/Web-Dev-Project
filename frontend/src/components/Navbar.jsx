@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Calendar, LogOut, Menu, X, Home, LogIn, UserPlus, Settings, PlusCircle } from 'lucide-react';
+import { Calendar, LogOut, Menu, X, Home, LogIn, UserPlus, Settings, PlusCircle, AlertCircle } from 'lucide-react';
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
+import { AuthContext } from "../context/AuthContext";
+import { eventService } from "../services/eventService";
 
 
 function Navbar({ user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { user: contextUser } = useContext(AuthContext);
+  const [pendingApprovals, setPendingApprovals] = useState(0);
+
+  const effectiveUser = user || contextUser;
 
   const handleLogout = () => {
     onLogout();
@@ -15,13 +21,42 @@ function Navbar({ user, onLogout }) {
     setMobileMenuOpen(false);
   };
 
-  // Any organizer or admin can create events
-  const canCreateEvent = user?.role === 'ORGANIZER' || user?.role === 'ADMIN';
+  // Only organizers can create event proposals (admins approve only)
+  const canCreateEvent = effectiveUser?.role === 'ORGANIZER';
 
   const displayName =
-    (user?.firstName || user?.lastName)
-      ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-      : user?.name || user?.email || '';
+    (effectiveUser?.firstName || effectiveUser?.lastName)
+      ? `${effectiveUser.firstName || ''} ${effectiveUser.lastName || ''}`.trim()
+      : effectiveUser?.name || effectiveUser?.email || '';
+
+  useEffect(() => {
+    let intervalId;
+
+    const loadPendingApprovals = async () => {
+      try {
+        if (effectiveUser?.role !== 'ADMIN') {
+          setPendingApprovals(0);
+          return;
+        }
+
+        const proposals = await eventService.getProposals();
+        const pendingCount = proposals.filter((p) => p.status === 'PENDING').length;
+        setPendingApprovals(pendingCount);
+      } catch (error) {
+        console.error('Failed to load event proposals for navbar indicator', error);
+      }
+    };
+
+    loadPendingApprovals();
+
+    if (effectiveUser?.role === 'ADMIN') {
+      intervalId = setInterval(loadPendingApprovals, 30000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [effectiveUser]);
 
   return (
     <nav className="bg-slate-900 border-b border-slate-700 sticky top-0 z-50 shadow-lg">
@@ -60,7 +95,7 @@ function Navbar({ user, onLogout }) {
               </Link>
             )}
 
-            {user && (
+            {effectiveUser && (
               <>
                 <Link
                   to="/registrations"
@@ -78,7 +113,25 @@ function Navbar({ user, onLogout }) {
             )}
 
             <div className="flex items-center gap-3 pl-6 border-l border-slate-700">
-              {user ? (
+              {effectiveUser?.role === 'ADMIN' && (
+                <Link
+                  to="/admin/event-approvals"
+                  className={`relative flex items-center justify-center w-8 h-8 rounded-full transition ${
+                    pendingApprovals > 0
+                      ? 'bg-red-600 hover:bg-red-700 text-white'
+                      : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                  }`}
+                  title={
+                    pendingApprovals > 0
+                      ? `${pendingApprovals} event(s) awaiting approval`
+                      : 'No pending event approvals'
+                  }
+                >
+                  <span className="text-sm font-bold">!</span>
+                </Link>
+              )}
+
+              {effectiveUser ? (
                 <>
                   <span className="text-slate-300 text-sm">{displayName}</span>
                   <Link
@@ -125,6 +178,19 @@ function Navbar({ user, onLogout }) {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden pb-4 space-y-2 border-t border-slate-700">
+            {effectiveUser?.role === 'ADMIN' && (
+              <Link
+                to="/admin/event-approvals"
+                className={`block px-3 py-2 rounded-lg transition ${
+                  pendingApprovals > 0
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Pending Approvals{pendingApprovals > 0 ? ` (${pendingApprovals})` : ''}
+              </Link>
+            )}
             <Link
               to="/"
               className="block px-3 py-2 rounded-lg hover:bg-slate-700 text-slate-300 transition"
@@ -177,7 +243,7 @@ function Navbar({ user, onLogout }) {
               </>
             )}
             <div className="pt-2 border-t border-slate-700 space-y-2">
-              {!user ? (
+              {!effectiveUser ? (
                 <>
                   <Link
                     to="/login"

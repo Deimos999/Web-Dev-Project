@@ -118,12 +118,6 @@ const AdminDashboard = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-4xl font-bold text-white">Admin Dashboard</h1>
-        <Link
-          to="/events/create"
-          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
-        >
-          Create Event
-        </Link>
       </div>
 
       <ErrorAlert message={error} onClose={() => setError('')} />
