@@ -24,12 +24,13 @@ function Navbar({ user, onLogout }) {
       : user?.name || user?.email || '';
 
   return (
-    <nav className="bg-slate-900 border-b border-slate-700 sticky top-0 z-50 shadow-lg">
+    <nav className="sticky top-0 z-50 shadow-lg" style={{backgroundColor: 'var(--color-card)', borderBottomColor: 'var(--color-border)'}}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link
             to="/"
-            className="flex items-center gap-2 font-bold text-xl text-blue-400 hover:text-blue-300 transition"
+            className="flex items-center gap-2 font-bold text-xl transition"
+            style={{color: 'var(--color-primary)'}}
           >
             <Calendar size={28} />
             EventHub
@@ -39,13 +40,19 @@ function Navbar({ user, onLogout }) {
           <div className="hidden md:flex items-center gap-6">
             <Link
               to="/"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-700 transition text-slate-300 hover:text-white"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg transition"
+              style={{color: 'var(--text-secondary)'}}
+              onMouseEnter={(e) => {e.target.parentElement.style.backgroundColor = 'var(--color-border)'}}
+              onMouseLeave={(e) => {e.target.parentElement.style.backgroundColor = 'transparent'}}
             >
               <Home size={18} /> Home
             </Link>
             <Link
               to="/events"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-700 transition text-slate-300 hover:text-white"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg transition"
+              style={{color: 'var(--text-secondary)'}}
+              onMouseEnter={(e) => {e.target.parentElement.style.backgroundColor = 'var(--color-border)'}}
+              onMouseLeave={(e) => {e.target.parentElement.style.backgroundColor = 'transparent'}}
             >
               <Calendar size={18} /> Events
             </Link>
@@ -54,7 +61,10 @@ function Navbar({ user, onLogout }) {
             {canCreateEvent && (
               <Link
                 to="/create-event"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-white transition"
+                style={{backgroundColor: 'var(--color-success)'}}
+                onMouseEnter={(e) => {e.target.style.opacity = '0.9'}}
+                onMouseLeave={(e) => {e.target.style.opacity = '1'}}
               >
                 <PlusCircle size={18} /> Create Event
               </Link>
@@ -64,32 +74,44 @@ function Navbar({ user, onLogout }) {
               <>
                 <Link
                   to="/registrations"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-700 transition text-slate-300 hover:text-white"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg transition"
+                  style={{color: 'var(--text-secondary)'}}
+                  onMouseEnter={(e) => {e.target.parentElement.style.backgroundColor = 'var(--color-border)'}}
+                  onMouseLeave={(e) => {e.target.parentElement.style.backgroundColor = 'transparent'}}
                 >
                   My Registrations
                 </Link>
                 <Link
                   to="/tickets"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-700 transition text-slate-300 hover:text-white"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg transition"
+                  style={{color: 'var(--text-secondary)'}}
+                  onMouseEnter={(e) => {e.target.parentElement.style.backgroundColor = 'var(--color-border)'}}
+                  onMouseLeave={(e) => {e.target.parentElement.style.backgroundColor = 'transparent'}}
                 >
                   Tickets
                 </Link>
               </>
             )}
 
-            <div className="flex items-center gap-3 pl-6 border-l border-slate-700">
+            <div className="flex items-center gap-3 pl-6" style={{borderLeftColor: 'var(--color-border)', borderLeftWidth: '1px'}}>
               {user ? (
                 <>
-                  <span className="text-slate-300 text-sm">{displayName}</span>
+                  <span className="text-sm" style={{color: 'var(--text-secondary)'}}>{displayName}</span>
                   <Link
                     to="/settings"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-700 transition text-slate-300 hover:text-white"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition"
+                    style={{color: 'var(--text-secondary)'}}
+                    onMouseEnter={(e) => {e.target.parentElement.style.backgroundColor = 'var(--color-border)'}}
+                    onMouseLeave={(e) => {e.target.parentElement.style.backgroundColor = 'transparent'}}
                   >
                     <Settings size={18} />
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white transition"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-white transition"
+                    style={{backgroundColor: 'var(--color-error)'}}
+                    onMouseEnter={(e) => {e.target.style.opacity = '0.9'}}
+                    onMouseLeave={(e) => {e.target.style.opacity = '1'}}
                   >
                     <LogOut size={18} /> Logout
                   </button>
@@ -98,13 +120,19 @@ function Navbar({ user, onLogout }) {
                 <>
                   <Link
                     to="/login"
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-white transition"
+                    style={{backgroundColor: 'var(--color-primary)'}}
+                    onMouseEnter={(e) => {e.target.style.opacity = '0.9'}}
+                    onMouseLeave={(e) => {e.target.style.opacity = '1'}}
                   >
                     <LogIn size={18} /> Login
                   </Link>
                   <Link
                     to="/register"
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white transition"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-white transition"
+                    style={{backgroundColor: 'var(--color-success)'}}
+                    onMouseEnter={(e) => {e.target.style.opacity = '0.9'}}
+                    onMouseLeave={(e) => {e.target.style.opacity = '1'}}
                   >
                     <UserPlus size={18} /> Register
                   </Link>
@@ -116,7 +144,8 @@ function Navbar({ user, onLogout }) {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden text-slate-300"
+            className="md:hidden"
+            style={{color: 'var(--text-secondary)'}}
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>

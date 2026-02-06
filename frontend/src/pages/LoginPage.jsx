@@ -31,35 +31,28 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md">
-        <div className="bg-slate-800 rounded-lg shadow-xl p-8 border border-slate-700">
-          <div className="flex flex-col items-center justify-center mb-6 space-y-2">
-            <div className="flex items-center gap-2">
-              <LogIn className="text-blue-400" size={32} />
-              <h2 className="text-3xl font-bold text-white">Login</h2>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-700/60 px-3 py-1 rounded-full">
-              <Wallet className="text-green-400" size={18} />
-              <span>Wallet-friendly events • Top up & pay from your account</span>
-            </div>
-          </div>
-
-          <ErrorAlert message={error} onClose={() => setError('')} />
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+       <div className="container section">
+         <div className="w-full max-w-md mx-auto">
+           <div className="ds-card">
+             <div className="flex flex-col items-center justify-center mb-6 space-y-2">
+               <div className="flex items-center gap-2">
+                 <LogIn className="text-primary" size={28} />
+                 <h2 className="text-2xl font-semibold text-primary">Login</h2>
+               </div>
+               <div className="flex items-center gap-2 text-sm text-secondary bg-white/5 px-3 py-1 rounded-full">
+                 <Wallet className="text-success" size={16} />
+                 <span className="text-secondary">Wallet-friendly events • Top up & pay from your account</span>
+               </div>
+             </div>
+ 
+             <ErrorAlert message={error} onClose={() => setError('')} />
+ 
+             <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-slate-300 text-sm font-semibold mb-2">
                 Email Address
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition"
-                required
-              />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="ds-input" required />
             </div>
 
             <div>
@@ -76,30 +69,15 @@ function LoginPage() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white rounded-lg font-semibold transition duration-200"
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
+              <button type="submit" disabled={loading} className="ds-btn ds-btn-primary w-full">{loading ? 'Logging in...' : 'Login'}</button>
           </form>
 
-          <p className="text-slate-400 mt-6 text-center text-sm">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-blue-400 hover:underline font-semibold">
-              Register here
-            </Link>
-          </p>
+            <p className="text-secondary mt-6 text-center text-sm">Don't have an account? <Link to="/register" className="text-primary font-semibold">Register here</Link></p>
 
-          <p className="text-slate-400 mt-4 text-center text-sm">
-            <Link to="#" className="text-blue-400 hover:underline">
-              Forgot password?
-            </Link>
-          </p>
+            <p className="text-secondary mt-4 text-center text-sm"><Link to="#" className="text-primary">Forgot password?</Link></p>
+          </div>
         </div>
       </div>
-    </div>
   );
 }
 

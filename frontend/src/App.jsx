@@ -37,12 +37,12 @@ function App() {
     setUser(null);
   };
 
-  if (loading) return <div className="text-white text-xl">Loading...</div>;
+  if (loading) return <div className="text-primary text-xl">Loading...</div>;
 
   return (
     <Router>
       <AuthContext.Provider value={{ user, setUser, logout }}>
-        <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+        <div className="flex flex-col min-h-screen" style={{backgroundColor: 'var(--color-background)'}}>
           <Navbar user={user} onLogout={logout} />
           <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
             <Routes>

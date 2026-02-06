@@ -7,28 +7,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#3b82f6',
-        secondary: '#8b5cf6',
-        success: '#10b981',
-        warning: '#f59e0b',
-        danger: '#ef4444',
-        dark: {
-          50: '#f9fafb',
-          100: '#f3f4f6',
-          200: '#e5e7eb',
-          300: '#d1d5db',
-          400: '#9ca3af',
-          500: '#6b7280',
-          600: '#4b5563',
-          700: '#374151',
-          800: '#1f2937',
-          900: '#111827',
-          950: '#030712',
-        },
+        primary: '#F97316',
+        'primary-hover': '#EA580C',
+        'text-primary': '#1F2937',
+        'text-secondary': '#6B7280',
+        background: '#FFF7ED',
+        border: '#FCD9B6',
+        error: '#DC2626',
+        success: '#16A34A',
       },
       spacing: {
-        '128': '32rem',
-        '144': '36rem',
+        // Additional convenient spacings (kept small and focused)
+        '4px': '4px',
+        '8px': '8px',
+        '16px': '16px',
+        '24px': '24px',
+        '32px': '32px',
+        '48px': '48px',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
@@ -61,6 +56,7 @@ export default {
       },
       fontFamily: {
         sans: [
+          'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
           '"Segoe UI"',
@@ -96,6 +92,9 @@ export default {
         '1000': '1000ms',
       },
     },
+  },
+  corePlugins: {
+    container: true,
   },
   plugins: [
     require('@tailwindcss/forms'),

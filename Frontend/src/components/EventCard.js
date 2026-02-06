@@ -1,0 +1,67 @@
+import React from "react";
+import "./EventCard.css";
+
+const EventCard = ({
+  event,
+  role,
+  currentUser,
+  onRegister,
+  onDelete,
+  registrations,
+  onDeleteRegistration
+}) => {
+  return (
+    <div className="ds-card event-card">
+      <h3>{event.title}</h3>
+      <p>Date: {event.date}</p>
+      <p>Time: {event.time}</p>
+
+      {/* User view: Register button */}
+      {role === "user" && (
+        <>
+          {registrations.find(r => r.userId === currentUser?.id) ? (
+            <p>You are already registered ✅</p>
+          ) : (
+            <button onClick={() => onRegister(event.tickets?.[0]?.id)} className="register-btn">
+              Register
+            </button>
+          )}
+
+          {/* Show delete registration button */}
+          {registrations
+            .filter(r => r.userId === currentUser?.id)
+            .map(r => (
+              <button
+                key={r.id}
+                onClick={() => onDeleteRegistration(r.id)}
+                className="delete-reg-btn"
+              >
+                Delete Registration
+              </button>
+            ))}
+        </>
+      )}
+
+      {/* Organizer view: Delete event */}
+      {role === "organizer" && (
+        <button onClick={onDelete} className="delete-event-btn">
+          Delete Event
+        </button>
+      )}
+
+      {/* Admin view: Show attendees */}
+      {role === "admin" && registrations.length > 0 && (
+        <div className="attendee-list">
+          <h4>Attendees ({registrations.length}):</h4>
+          <ul>
+            {registrations.map(r => (
+              <li key={r.id}>{r.user?.name || "Unknown"} - {r.user?.email || "N/A"}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default EventCard;

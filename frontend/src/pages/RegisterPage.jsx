@@ -50,12 +50,12 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md">
-        <div className="bg-slate-800 rounded-lg shadow-xl p-8 border border-slate-700">
+    <div className="container section">
+      <div className="w-full max-w-md mx-auto">
+        <div className="ds-card">
           <div className="flex items-center justify-center mb-6">
-            <UserPlus className="text-green-400 mr-2" size={32} />
-            <h2 className="text-3xl font-bold text-white">Register</h2>
+            <UserPlus className="text-primary mr-2" size={32} />
+            <h2 className="text-2xl font-semibold text-primary">Register</h2>
           </div>
 
           <ErrorAlert message={error} onClose={() => setError('')} />
@@ -72,7 +72,7 @@ function RegisterPage() {
                   value={formData.firstName}
                   onChange={handleChange}
                   placeholder="John"
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-green-500 transition"
+                  className="ds-input"
                   required
                 />
               </div>
@@ -137,18 +137,14 @@ function RegisterPage() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white rounded-lg font-semibold transition duration-200"
-            >
+            <button type="submit" disabled={loading} className="ds-btn ds-btn-primary w-full">
               {loading ? 'Creating account...' : 'Register'}
             </button>
           </form>
 
-          <p className="text-slate-400 mt-6 text-center text-sm">
+          <p className="text-secondary mt-6 text-center text-sm">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-400 hover:underline font-semibold">
+            <Link to="/login" className="text-primary font-semibold">
               Login here
             </Link>
           </p>
