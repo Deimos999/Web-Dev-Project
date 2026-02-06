@@ -32,10 +32,10 @@ router.post(
   validateRequest,
   async (req, res, next) => {
     try {
-      // Only organizers and admins can top up directly
-      if (!["ORGANIZER", "ADMIN"].includes(req.user.role)) {
+      // Only admins can top up directly
+      if (req.user.role !== "ADMIN") {
         throw new AppError(
-          "Only organizers and administrators can top up wallet balances",
+          "Only administrators can top up wallet balances",
           403
         );
       }

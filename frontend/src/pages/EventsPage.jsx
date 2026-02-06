@@ -30,8 +30,9 @@ const EventsPage = () => {
         ),
         categoryService.getAllCategories(),
       ]);
-      console.log('[EventsPage] Loaded events:', eventsData.length);
-      setEvents(eventsData);
+      const publishedEvents = eventsData.filter((e) => e.status === 'published');
+      console.log('[EventsPage] Loaded events (published only):', publishedEvents.length);
+      setEvents(publishedEvents);
       setCategories(categoriesData);
     } catch (err) {
       console.error('[EventsPage] Error loading data:', err);
@@ -45,8 +46,9 @@ const EventsPage = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const data = await eventService.searchEvents(searchQuery);
-      setEvents(data);
+      const data = await eventService.searchEvents(searchQuery, { status: 'published' });
+      const publishedEvents = data.filter((e) => e.status === 'published');
+      setEvents(publishedEvents);
     } catch (err) {
       setError('Search failed');
     } finally {
@@ -59,9 +61,10 @@ const EventsPage = () => {
     try {
       setLoading(true);
       const data = categoryId
-        ? await eventService.getEventsByCategory(categoryId)
+        ? await eventService.getEventsByCategory(categoryId, { status: 'published' })
         : await eventService.getAllEvents();
-      setEvents(data);
+      const publishedEvents = data.filter((e) => e.status === 'published');
+      setEvents(publishedEvents);
     } catch (err) {
       setError('Filter failed');
     } finally {

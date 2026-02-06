@@ -10,6 +10,7 @@ import EventsPage from './pages/EventsPage.jsx';
 import EventDetailPage from './pages/EventDetailPage.jsx';
 import CreateEventPage from './pages/CreateEventPage.jsx';
 import EditEventPage from './pages/EditEventPage.jsx';
+import EventProposalsPage from './pages/EventProposalsPage.jsx';
 import RegistrationsPage from './pages/RegistrationsPage.jsx';
 import TicketsPage from './pages/TicketsPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
@@ -53,6 +54,7 @@ function App() {
               <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/events/:id/edit" element={<PrivateRoute><EditEventPage /></PrivateRoute>} />
               <Route path="/create-event" element={<PrivateRoute><CreateEventPage /></PrivateRoute>} />
+              <Route path="/admin/event-approvals" element={<PrivateRoute><EventProposalsPage /></PrivateRoute>} />
               <Route path="/registrations" element={<PrivateRoute><RegistrationsPage /></PrivateRoute>} />
               <Route path="/tickets" element={<PrivateRoute><TicketsPage /></PrivateRoute>} />
               <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
